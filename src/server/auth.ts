@@ -1,15 +1,16 @@
-import { getServerSession, type NextAuthOptions } from "next-auth";
+import NextAuth, { type NextAuthResult } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { db } from "~/server/db";
 
-export const authOptions: NextAuthOptions = {
+// Экспортируем конфигурацию и методы согласно стандарту Auth.js v5
+export const { handlers, auth, signIn, signOut } = NextAuth({
     callbacks: {
         session: ({ session, token }) => ({
             ...session,
             user: {
                 ...session.user,
                 id: token.sub,
-                role: token.role ?? "USER", // Передаем роль в сессию
+                role: token.role ?? "USER", // Передаем роль пользователя в сессию
             },
         }),
         jwt: ({ token, user }) => {
@@ -34,7 +35,7 @@ export const authOptions: NextAuthOptions = {
                     where: { email: credentials.email },
                 });
 
-                // В будущем здесь будет проверка хэша пароля (например, через bcrypt)
+                // Временная текстовая проверка (в будущем добавим хэширование bcrypt)
                 if (user && user.password === credentials.password) {
                     return { id: user.id, name: user.name, email: user.email, role: user.role };
                 }
@@ -48,6 +49,7 @@ export const authOptions: NextAuthOptions = {
     pages: {
         signIn: "/login",
     },
-};
+});
 
-export const getServerAuthSession = () => getServerSession(authOptions);
+// Экспортируем вспомогательный метод для совместимости с контекстом tRPC
+export const getServerAuthSession = () => auth();
