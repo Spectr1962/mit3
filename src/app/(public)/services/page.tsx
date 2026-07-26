@@ -13,10 +13,10 @@ import {
     ChevronRight
 } from "lucide-react";
 
-// Инкрементальная статическая регенерация (ISR) на 30 минут
 export const revalidate = 1800;
 
-const iconMap: Record<string, any> = {
+// Шаг 1: Задаем строгий тип для карты иконок вместо any
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
     "analytics": BarChart3,
     "pwa": Smartphone,
     "seo": Search,
@@ -37,7 +37,17 @@ const bentoStyles: Record<string, string> = {
 };
 
 async function ServicesMainPageContent() {
-    let rootServices = [];
+    let rootServices: Array<{
+        id: string;
+        title: string;
+        slug: string;
+        description: string | null;
+        price: unknown; // Prisma Decimal возвращается как unknown/Decimal, типизируем безопасно
+        isActive: boolean;
+        parentId: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+    }> = [];
 
     try {
         rootServices = await api.services.getRootServices();
@@ -57,7 +67,6 @@ async function ServicesMainPageContent() {
     return (
         <div className="space-y-8 py-4 md:py-8 max-w-6xl mx-auto px-2">
 
-            {/* СТАТИЧЕСКИЕ ХЛЕБНЫЕ КРОШКИ ДЛЯ КОРНЯ КАТАЛОГА */}
             <nav className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground bg-muted/40 p-2.5 px-4 backdrop-blur-sm rounded-xl border w-fit">
                 <Link href="/" className="hover:text-primary transition-colors flex items-center gap-1.5">
                     <Home className="h-3.5 w-3.5" />
@@ -69,7 +78,6 @@ async function ServicesMainPageContent() {
                 </span>
             </nav>
 
-            {/* Заголовок раздела */}
             <div className="space-y-3 text-left md:max-w-2xl">
                 <h1 className="text-3xl md:text-5xl font-black tracking-tight text-foreground">
                     Матрица Экосистемы <span className="text-primary">MIT3</span>
@@ -80,11 +88,11 @@ async function ServicesMainPageContent() {
                 </p>
             </div>
 
-            {/* Адаптивная сетка Bento Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 auto-rows-[200px]">
                 {rootServices.map((service) => {
-                    const Icon = iconMap[service.slug] || BarChart3;
-                    const gridClass = bentoStyles[service.slug] || "md:col-span-1 md:row-span-1";
+                    // Шаг 2: Безопасно извлекаем иконку и стиль плитки из типизированных мап
+                    const Icon = iconMap[service.slug] ?? BarChart3;
+                    const gridClass = bentoStyles[service.slug] ?? "md:col-span-1 md:row-span-1";
 
                     return (
                         <Link
@@ -110,7 +118,7 @@ async function ServicesMainPageContent() {
                                 </div>
 
                                 <p className="text-xs md:text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-                                    {service.description}
+                                    {service.description ?? ""}
                                 </p>
                             </div>
 

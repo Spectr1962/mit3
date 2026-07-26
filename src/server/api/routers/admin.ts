@@ -11,7 +11,7 @@ export const adminRouter = createTRPCRouter({
                 data: {
                     action: input.action,
                     path: input.path,
-                    userId: ctx.session?.user?.id || null,
+                    userId: ctx.session?.user?.id ?? null,
                 },
             });
         }),

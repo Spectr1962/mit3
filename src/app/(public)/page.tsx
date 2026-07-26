@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getServerAuthSession } from "~/server/auth";
-import { api, HydrateClient } from "~/trpc/server";
+import { HydrateClient } from "~/trpc/server";
 import { ArrowRight, Layers, Newspaper, Briefcase } from "lucide-react";
 
 export default async function Home() {
@@ -22,7 +22,7 @@ export default async function Home() {
         <div className="p-4 rounded-xl border bg-card w-full max-w-md text-sm">
           {session ? (
             <p className="text-muted-foreground">
-              Вы вошли как: <span className="font-semibold text-foreground">{session.user?.name || session.user?.email}</span>
+              Вы вошли как: <span className="font-semibold text-foreground">{session.user?.name ?? session.user?.email}</span>
             </p>
           ) : (
             <p className="text-muted-foreground">

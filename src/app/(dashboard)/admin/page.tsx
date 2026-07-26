@@ -1,5 +1,5 @@
 import { api } from "~/trpc/server";
-import { Users, Activity, Layers, ArrowLeft, Clock, MonitorPwa } from "lucide-react";
+import { Users, Activity, ArrowLeft, Clock } from "lucide-react";
 import Link from "next/link";
 
 // Выключаем кэширование админки (данные должны быть всегда свежими — SSR)

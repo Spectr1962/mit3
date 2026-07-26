@@ -1,10 +1,19 @@
-/**
- * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially useful
- * for Docker builds.
- */
-//import "./src/env.js";
+import withPWAInit from "@ducanh2912/next-pwa";
 
-/** @type {import("next").NextConfig} */
-const config = {};
+const withPWA = withPWAInit({
+    dest: "public",               // Папка, куда скомпилируется sw.js
+    register: true,               // Автоматическая регистрация воркера на смартфонах
+    reloadOnOnline: true,         // Автоперезагрузка страницы при восстановлении сети
+    disable: process.env.NODE_ENV === "development", // Выключаем кэш на локалке для удобства разработки
 
-export default config;
+    // Переносим расширенные параметры управления кэшем внутрь объекта workboxOptions
+    workboxOptions: {
+        skipWaiting: true,
+    }
+});
+
+const nextConfig = {
+    reactStrictMode: true,
+};
+
+export default withPWA(nextConfig);

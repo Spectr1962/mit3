@@ -68,7 +68,7 @@ export const mediaRouter = createTRPCRouter({
                 });
 
                 return updatedPost;
-            } catch (error) {
+            } catch {
                 // Ловим ошибку Prisma P2025 (Запись для обновления не найдена), чтобы сервер не падал в Runtime
                 console.warn(`[tRPC Media Router]: Публикация со slug "${input.slug}" не найдена в PostgreSQL.`);
                 return null;

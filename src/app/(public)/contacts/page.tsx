@@ -5,7 +5,6 @@ import {
     Mail,
     Phone,
     MapPin,
-    Clock,
     ChevronRight,
     Home,
     Send,
@@ -17,11 +16,6 @@ export const metadata = {
     title: "Контакты и b2b-Интеграция | MIT3-Platform",
     description: "Контактная информация экосистемы MIT3 и прямая форма отправки технических заявок.",
 };
-
-interface FormState {
-    success?: boolean;
-    error?: string;
-}
 
 export default async function ContactsPage({
     searchParams,

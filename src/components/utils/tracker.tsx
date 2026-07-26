@@ -53,7 +53,7 @@ export function Tracker() {
             action: actionDescription,
             path: pathname,
         });
-    }, [pathname]);
+    }, [pathname, trackMutation]);
 
     return null; // Компонент работает исключительно в фоне и ничего не рендерит визуально
 }

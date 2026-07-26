@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { api } from "~/trpc/server";
 import { PostType } from "@prisma/client";
-import { Newspaper, Calendar, Eye, ChevronRight, Home, ArrowUpRight, BookOpen } from "lucide-react";
+import { Newspaper, Calendar, Eye, ChevronRight, Home, ArrowUpRight } from "lucide-react";
 
 // Кэшируем страницу медиацентра на 15 минут (ISR)
 export const revalidate = 900;

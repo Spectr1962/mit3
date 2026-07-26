@@ -24,7 +24,10 @@ export default async function DashboardLayout({
         redirect("/login");
     }
 
-    const isAdmin = session.user?.role === "ADMIN";
+    // Было: const isAdmin = (session?.user as any)?.role === "ADMIN";
+    // Замените на:
+    const isAdmin = session?.user?.role === "ADMIN";
+
 
     return (
         <div className="flex min-h-screen bg-muted/20">
@@ -73,7 +76,7 @@ export default async function DashboardLayout({
                 {/* Подвал сайдбара с профилем */}
                 <div className="border-t pt-4 space-y-3">
                     <div className="px-2">
-                        <p className="text-xs font-bold text-foreground truncate">{session.user?.name || "Пользователь"}</p>
+                        <p className="text-xs font-bold text-foreground truncate">{session.user?.name ?? "Пользователь"}</p>
                         <p className="text-[10px] text-muted-foreground truncate">{session.user?.email}</p>
                     </div>
                     <button className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-red-500 hover:bg-red-500/5 rounded-xl transition-colors">

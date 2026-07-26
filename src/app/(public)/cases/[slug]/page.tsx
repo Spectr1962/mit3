@@ -30,7 +30,7 @@ export default async function DetailCasePage({ params }: PageProps) {
     const project = await api.media.getBySlug({ slug: currentSlug });
 
     // Если кейс не найден или это обычная статья блога — отдаем 404
-    if (!project || project.type !== "CASE_STUDY") return notFound();
+    if (!project || project?.type !== "CASE_STUDY") return notFound();
 
     return (
         <div className="space-y-8 py-4 md:py-8 max-w-4xl mx-auto px-2">

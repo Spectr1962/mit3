@@ -1,6 +1,5 @@
 import { getServerAuthSession } from "~/server/auth";
 import { redirect } from "next/navigation";
-import { api } from "~/trpc/server";
 import {
     User,
     Mail,
@@ -47,7 +46,7 @@ export default async function ProfilePage() {
                 </div>
 
                 {/* Кнопка быстрого перехода в админку, если зашел суперадмин */}
-                {session.user.role === "ADMIN" && (
+                {session?.user?.role === "ADMIN" && (
                     <Link
                         href="/admin"
                         className="inline-flex items-center gap-1.5 text-xs font-bold text-red-500 bg-red-500/10 border border-red-500/20 px-3 py-2 rounded-xl hover:bg-red-500/20 transition-colors shadow-sm"
@@ -73,7 +72,7 @@ export default async function ProfilePage() {
                                     {session.user.name ?? "Клиент платформы"}
                                 </h3>
                                 <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary font-mono uppercase">
-                                    {session.user.role} Account
+                                    {session?.user?.role ?? "USER"} Account
                                 </span>
                             </div>
                         </div>

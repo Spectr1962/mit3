@@ -1,56 +1,81 @@
-import { PrismaAdapter } from "@auth/prisma-adapter";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
-import DiscordProvider from "next-auth/providers/discord";
-
+import CredentialsProvider from "next-auth/providers/credentials";
 import { db } from "~/server/db";
 
-/**
- * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
- * object and keep type safety.
- *
- * @see https://next-auth.js.org/getting-started/typescript#module-augmentation
- */
+// 1. Легальное расширение типов сессии в системном конфиге
 declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
-      // ...other properties
-      // role: UserRole;
+      role: string;
     } & DefaultSession["user"];
   }
 
-  // interface User {
-  //   // ...other properties
-  //   // role: UserRole;
-  // }
+  interface User {
+    role?: string;
+    password?: string | null;
+  }
 }
 
-/**
- * Options for NextAuth.js used to configure adapters, providers, callbacks, etc.
- *
- * @see https://next-auth.js.org/configuration/options
- */
-export const authConfig = {
-  providers: [
-    DiscordProvider,
-    /**
-     * ...add more providers here.
-     *
-     * Most other providers require a bit more work than the Discord provider. For example, the
-     * GitHub provider requires you to add the `refresh_token_expires_in` field to the Account
-     * model. Refer to the NextAuth.js docs for the provider you want to use. Example:
-     *
-     * @see https://next-auth.js.org/providers/github
-     */
-  ],
-  adapter: PrismaAdapter(db),
+// 2. Экспорт чистой конфигурации для NextAuth без единого any
+export const authConfig: NextAuthConfig = {
   callbacks: {
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: user.id,
-      },
-    }),
+    session: ({ session, token }) => {
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          id: typeof token.sub === "string" ? token.sub : "",
+          role: typeof token.role === "string" ? token.role : "USER",
+        },
+      };
+    },
+    jwt: ({ token, user }) => {
+      if (user?.role) {
+        token.role = user.role;
+      }
+      return token;
+    },
   },
-} satisfies NextAuthConfig;
+  providers: [
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "text" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        // Шаг 1. Явно проверяем, что переданные учетные данные являются строками
+        if (
+          !credentials ||
+          typeof credentials.email !== "string" ||
+          typeof credentials.password !== "string"
+        ) {
+          return null;
+        }
+
+        // Шаг 2. Теперь TypeScript точно знает, что это строка. Вызов чист и безопасен
+        const user = await db.user.findUnique({
+          where: { email: credentials.email },
+        });
+
+        if (user?.password && user.password === credentials.password) {
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role
+          };
+        }
+        return null;
+      }
+
+    }),
+  ],
+  session: {
+    strategy: "jwt",
+  },
+  pages: {
+    signIn: "/login",
+  },
+};

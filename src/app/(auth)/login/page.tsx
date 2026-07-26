@@ -32,7 +32,7 @@ export default function LoginPage() {
                 router.refresh();
                 router.push("/profile"); // При успешном входе отправляем в ЛК
             }
-        } catch (err) {
+        } catch {
             setError("Произошла системная ошибка при входе");
         } finally {
             setLoading(false);
