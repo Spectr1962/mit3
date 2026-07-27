@@ -3,6 +3,7 @@ import { GeistSans } from "geist/font/sans";
 import { type Metadata, type Viewport } from "next";
 import { TRPCReactProvider } from "~/trpc/react";
 import { Tracker } from "~/components/utils/tracker";
+import { PwaInstallBanner } from "~/components/layout/pwa-install-banner"; // 1. Импортируем баннер
 
 // 1. НАСТРОЙКА VIEWPORT ДЛЯ НАДЁЖНОГО ОТОБРАЖЕНИЯ НА СМАРТФОНАХ
 export const viewport: Viewport = {
@@ -36,6 +37,8 @@ export default function RootLayout({
       <body>
         <TRPCReactProvider>
           <Tracker />
+          {/* 2. Подключаем баннер установки */}
+          <PwaInstallBanner />
           {children}
         </TRPCReactProvider>
       </body>
