@@ -4,3 +4,7 @@
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
+body {
+  /* Автоматический отступ, равный высоте чёлки/Dynamic Island конкретного iPhone */
+  padding-top: env(safe-area-inset-top, 0px);
+}

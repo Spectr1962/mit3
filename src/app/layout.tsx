@@ -19,9 +19,10 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "MIT3 PWA Platform",
   description: "Многостраничная b2b платформа на T3 стеке",
+  // Найдите этот блок в metadata и замените значение:
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default", // Изменили с "black-translucent" на "default"
     title: "MIT3 Platform",
   },
   formatDetection: {
