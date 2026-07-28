@@ -4,81 +4,64 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client-js" // УДАЛИЛИ СТРОКУ OUTPUT ТАК КАК ОНА ЛОМАЛА ПУТИ ДЛЯ TSX
 }
 
-enum Role {
-  USER
-  ADMIN
+// 1. Отраслевые хабы-навигаторы (например: /services/site/medicina)
+model IndustryHub {
+  id        String      @id @default(uuid())
+  slug      String      @unique // Транслит названия (например: medicina)
+  title     String      // Название для админки и меню (Медицина)
+  heroTitle String      // H1 для хаба
+  heroDesc  String      
+  isActive  Boolean     @default(true)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  
+  niches    NichePage[]
 }
 
-enum PostType {
-  NEWS
-  ARTICLE
-  CASE_STUDY
+// 2. Изолированные посадочные страницы ниш (лендинги)
+model NichePage {
+  id         String      @id @default(uuid())
+  slug       String      @unique // ЧПУ-транслит ниши (например: stomatologiya)
+  seoTitle   String      // Мета-тег Title
+  seoDesc    String      // Мета-тег Description
+  heroTitle  String      // Уникальный H1 для ниши
+  painTitle  String      // Заголовок блока болей
+  painDesc   String      // Описание Точки А
+  isActive   Boolean     @default(true)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  industryId String
+  industry   IndustryHub @relation(fields: [industryId], references: [id], onDelete: Cascade)
+  services   Service[]
 }
 
-model User {
-  id           String        @id @default(cuid())
-  name         String?
-  email        String?       @unique
-  password     String        
-  role         Role          @default(USER)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  posts        Post[]        
-  logs         ActivityLog[] 
-}
-
+// 3. Услуги и ИТ-модули "Шведского стола"
 model Service {
-  id          String    @id @default(cuid())
-  title       String    
-  slug        String    @unique 
-  description String?   @db.Text
-  price       Decimal?  @db.Decimal(10, 2)
-  isActive    Boolean   @default(true)
-  parentId    String?
-  parent      Service?  @relation("ServiceHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
-  children    Service[] @relation("ServiceHierarchy")
-  cases       Post[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id           String      @id @default(uuid())
+  name         String      // Название модуля (например: Модуль "Push-Маркетинг")
+  description  String      // Маркетинговая выгода
+  type         String      @default("MODULE") // CORE (в базе) или MODULE (допродажа)
+  tier         String      @default("BASE") // BASE / BUSINESS / MAX
+  setupPrice   Float       // Разовая стоимость запуска
+  monthlyPrice Float       // Ежемесячная абонентская плата
+  itemLimit    Int         @default(0) // Лимит позиций в прайсе (не более 30 для BASE по ТЗ)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
 
-  @@index([slug])
+  nicheId      String?
+  niche        NichePage?  @relation(fields: [nicheId], references: [id], onDelete: SetNull)
 }
 
-model Post {
-  id          String    @id @default(cuid())
-  title       String    
-  slug        String    @unique
-  summary     String    @db.Text  
-  content     String    @db.Text  
-  coverImage  String?   
-  isPublished Boolean   @default(false)
-  publishedAt DateTime?
-  viewCount   Int       @default(0) 
-  type        PostType  @default(ARTICLE)
-  clientName  String?   
-  duration    String?   
-  authorId    String
-  author      User      @relation(fields: [authorId], references: [id])
-  serviceId   String?
-  service     Service?  @relation(fields: [serviceId], references: [id], onDelete: SetNull)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  @@index([slug])
-  @@index([type])
-}
-
-model ActivityLog {
-  id        String   @id @default(cuid())
-  action    String   
-  path      String   
-  createdAt DateTime @default(now())
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([createdAt])
+// 4. Сквозные лид-формы (Имя + Телефон / Telegram)
+model Lead {
+  id         String   @id @default(cuid())
+  contact    String   // Имя + Контактные данные
+  status     String   @default("NEW") // NEW, IN_PROGRESS, COMPLETED
+  pageSource String   // Точный URL откуда пришел лид (Параметр Telegram-логирования)
+  moduleName String?  // Заполнено, если заявка оставлена на странице модулей
+  createdAt  DateTime @default(now())
 }
