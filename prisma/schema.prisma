@@ -4,64 +4,190 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js" // УДАЛИЛИ СТРОКУ OUTPUT ТАК КАК ОНА ЛОМАЛА ПУТИ ДЛЯ TSX
+  provider = "prisma-client-js"
 }
 
-// 1. Отраслевые хабы-навигаторы (например: /services/site/medicina)
-model IndustryHub {
-  id        String      @id @default(uuid())
-  slug      String      @unique // Транслит названия (например: medicina)
-  title     String      // Название для админки и меню (Медицина)
-  heroTitle String      // H1 для хаба
-  heroDesc  String      
-  isActive  Boolean     @default(true)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+// ==========================================
+// 🛠️ БЛОК 1. РАЗДЕЛ «УСЛУГИ» (SERVICES)
+// ==========================================
+
+// Направления услуг (Категории: seo, site, smm, serm...)
+model ServiceCategory {
+  id           String          @id @default(cuid())
+  slug         String          @unique // ЧПУ: "seo", "site", "smm"
+  title        String          // Главный заголовок H1 на странице направления
+  templateType String          // Код шаблона в _templates: "SEO", "SITE", "STANDARD"
   
-  niches    NichePage[]
+  // SEO-поля
+  seoTitle     String          // Метатег Title
+  seoDesc      String          // Метатег Description
+  
+  // Контент страницы в формате JSON (офферы, преимущества, боли)
+  content      Json            
+
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  
+  // Связи
+  modules      ServiceModule[] // Список под-услуг (модулей)
 }
 
-// 2. Изолированные посадочные страницы ниш (лендинги)
-model NichePage {
-  id         String      @id @default(uuid())
-  slug       String      @unique // ЧПУ-транслит ниши (например: stomatologiya)
-  seoTitle   String      // Мета-тег Title
-  seoDesc    String      // Мета-тег Description
-  heroTitle  String      // Уникальный H1 для ниши
-  painTitle  String      // Заголовок блока болей
-  painDesc   String      // Описание Точки А
-  isActive   Boolean     @default(true)
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+// Конечные под-услуги (Модули: technical-audit, push-marketing...)
+model ServiceModule {
+  id           String          @id @default(cuid())
+  slug         String          @unique // ЧПУ: "technical-audit", "push-marketing"
+  title        String          // Главный заголовок H1 на странице услуги
+  templateType String          // Код шаблона в _templates: "PAYMENT", "STANDARD"
+  
+  // Маркетинговые поля из вашей таблицы
+  description  String          // Текстовое описание сути услуги
+  price        String          // Цена ("от 15 000 ₽" или "Входит в пакет")
+  
+  // SEO-поля
+  seoTitle     String          
+  seoDesc      String          
+  content      Json            // Специфические блоки (стек, этапы интеграции)
 
-  industryId String
-  industry   IndustryHub @relation(fields: [industryId], references: [id], onDelete: Cascade)
-  services   Service[]
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  
+  // Связи
+  categoryId   String
+  category     ServiceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  cases        Case[]          // Кейсы, где применялась эта услуга
 }
 
-// 3. Услуги и ИТ-модули "Шведского стола"
-model Service {
-  id           String      @id @default(uuid())
-  name         String      // Название модуля (например: Модуль "Push-Маркетинг")
-  description  String      // Маркетинговая выгода
-  type         String      @default("MODULE") // CORE (в базе) или MODULE (допродажа)
-  tier         String      @default("BASE") // BASE / BUSINESS / MAX
-  setupPrice   Float       // Разовая стоимость запуска
-  monthlyPrice Float       // Ежемесячная абонентская плата
-  itemLimit    Int         @default(0) // Лимит позиций в прайсе (не более 30 для BASE по ТЗ)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+// ==========================================
+// 🎯 БЛОК 2. РАЗДЕЛ «ОТРАСЛЕВЫЕ РЕШЕНИЯ» (SOLUTIONS)
+// ==========================================
 
-  nicheId      String?
-  niche        NichePage?  @relation(fields: [nicheId], references: [id], onDelete: SetNull)
+// Главные Ниши (medicine, construction, beauty...)
+model SolutionCategory {
+  id              String           @id @default(cuid())
+  slug            String           @unique // ЧПУ: "medicine", "construction"
+  title           String           // Заголовок H1 (например, "Решения для медицины")
+  
+  // SEO-поля
+  seoTitle        String          
+  seoDesc         String          
+  content         Json            
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  
+  // Связи
+  subDirections   SolutionTarget[] // Конкретные виды бизнеса внутри ниши
 }
 
-// 4. Сквозные лид-формы (Имя + Телефон / Telegram)
-model Lead {
-  id         String   @id @default(cuid())
-  contact    String   // Имя + Контактные данные
-  status     String   @default("NEW") // NEW, IN_PROGRESS, COMPLETED
-  pageSource String   // Точный URL откуда пришел лид (Параметр Telegram-логирования)
-  moduleName String?  // Заполнено, если заявка оставлена на странице модулей
-  createdAt  DateTime @default(now())
+// Конкретные виды бизнеса клиентов (стоматологии, онлайн-школы, заводы...)
+model SolutionTarget {
+  id              String           @id @default(cuid())
+  slug            String           @unique // ЧПУ: "stomatology", "online-schools"
+  title           String           // Заголовок H1 (например, "Маркетинг для стоматологий")
+  templateType    String           // Код из 6 b2b-шаблонов: "PRODUCT", "SERVICE", "ENTERPRISE"...
+  
+  // Поля из вашей таблицы MedTech
+  businessTask    String           // Главная боль / задача бизнеса клиента
+  pwaSolution     String           // Ваше точечное PWA-решение под эту боль
+  
+  // SEO-поля
+  seoTitle        String          
+  seoDesc         String          
+  content         Json            
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  
+  // Связи
+  categoryId      String
+  category        SolutionCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  cases           Case[]           // Кейсы, выполненные в этом виде бизнеса
+}
+
+// ==========================================
+// 🏆 БЛОК 3. РАЗДЕЛ «КЕЙСЫ» (CASES)
+// ==========================================
+
+model Case {
+  id              String          @id @default(cuid())
+  slug            String          @unique // ЧПУ: "kejs-seo-stomatologiya"
+  title           String          // Заголовок H1 кейса
+  templateType    String          // "MARKETING" или "DEV"
+  
+  // SEO-поля
+  seoTitle        String          
+  seoDesc         String          
+  
+  // Контент кейса (Блоки: Задача, Решение, Результаты, Скриншоты)
+  content         Json            
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  // ⚡ СКВОЗНАЯ SEO-ПЕРЕЛИНКОВКА (Связи с услугами и нишами)
+  serviceModuleId String?
+  serviceModule   ServiceModule?  @relation(fields: [serviceModuleId], references: [id], onDelete: SetNull)
+  
+  solutionTargetId String?
+  solutionTarget   SolutionTarget? @relation(fields: [solutionTargetId], references: [id], onDelete: SetNull)
+}
+
+// ==========================================
+// 📰 БЛОК 4. РАЗДЕЛ «МЕДИАЦЕНТР» (MEDIA)
+// ==========================================
+
+model MediaCategory {
+  id              String      @id @default(cuid())
+  slug            String      @unique // ЧПУ: "seo", "smm", "site"
+  title           String      // Название рубрики
+  seoTitle        String
+  seoDesc         String
+
+  posts           BlogPost[]
+}
+
+model BlogPost {
+  id              String        @id @default(cuid())
+  slug            String        @unique // ЧПУ: "kak-uvelichit-konversiyu"
+  title           String        // H1 статьи
+  excerpt         String        // Краткое описание для карточки превью
+  coverImage      String        // Ссылка на обложку в S3-хранилище
+  coverImageAlt   String        // SEO альт-текст для Яндекс.Картинок
+  
+  // SEO-поля
+  seoTitle        String
+  seoDesc         String
+  
+  content         Json          // Богатый текст статьи с разметкой
+  
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  // Связи
+  categoryId      String
+  category        MediaCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  
+  // Связи с автором (из блока О нас / Команда)
+  authorId        String
+  author          TeamMember    @relation(fields: [authorId], references: [id])
+}
+
+// ==========================================
+// 🏢 БЛОК 5. ФАКТОРЫ ДОВЕРИЯ (ABOUT / TEAM)
+// ==========================================
+
+model TeamMember {
+  id           String     @id @default(cuid())
+  slug         String     @unique // ЧПУ: "ivan-ivanov"
+  name         String     // Реальное имя сотрудника
+  role         String     // Должность: "Тимлид отдела SEO"
+  photo        String     // Фото сотрудника
+  photoAlt     String     // SEO альт-текст
+  bio          String     // Описание опыта (E-E-A-T)
+  skills       String[]   // Массив навыков: ["Next.js", "Tailwind"]
+  certificates String[]   // Ссылки на сканы дипломов Яндекса/Google
+  socials      Json       // Внешние ссылки на авторитетные профили (Habr, VC, GitHub)
+  order        Int        @default(0) // Сортировка вывода
+
+  posts        BlogPost[] // Статьи, написанные этим автором (для Google E-E-A-T)
 }
