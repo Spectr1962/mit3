@@ -1,7 +1,6 @@
 import "~/styles/globals.css";
 
 import { type Metadata } from "next";
-import { Geist } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
 import { TRPCReactProvider } from "~/trpc/react";
 
@@ -12,10 +11,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.json", // <-- ДОБАВЬ ЭТУ СТРОКУ СЮДА
 };
 
-const geist = Geist({
-  subsets: ["latin"],
-  variable: "--font-geist-sans",
-});
+const geist = { className: "", variable: "--font-geist-sans" };
 
 export default function RootLayout({
   children,
