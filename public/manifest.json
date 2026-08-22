@@ -1,0 +1,17 @@
+{
+    "name": "Digital Marketing Agency PWA",
+    "short_name": "DigitalAgency",
+    "description": "Витрина маркетинговых услуг, каталог, блог и форма заказа проекта",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#2563eb",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "https://flaticon.com",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
