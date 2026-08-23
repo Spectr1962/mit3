@@ -213,7 +213,7 @@ export default function AdminPage() {
                             <p className="text-sm text-slate-500 mt-1">Здесь создаются основные разделы (Разработка, SEO, Маркетинг) со сквозными мета-тегами [1.1].</p>
                         </div>
 
-                        <form onSubmit={handleCreateCategory} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+                        <form onSubmit={handleCategorySubmit} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
                             <div className="grid gap-6 md:grid-cols-2">
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Название (Видимое)</label>
