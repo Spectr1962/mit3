@@ -1,133 +1,193 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { api } from "~/trpc/react";
 
 export default function AdminPage() {
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [password, setPassword] = useState("");
-    const [isAuth, setIsAuth] = useState(false);
-    const [error, setError] = useState("");
+    const [activeTab, setActiveTab] = useState<"categories" | "services">("categories");
 
-    // Проверяем, входил ли ты ранее (чтобы не вводить пароль при каждой перезагрузке)
-    useEffect(() => {
-        const savedAuth = localStorage.getItem("mit3_admin_auth");
-        if (savedAuth === "true") {
-            setIsAuth(true);
-        }
-    }, []);
+    // Состояние полей для создания Направления
+    const [categoryForm, setCategoryForm] = useState({
+        title: "",
+        slug: "",
+        description: "",
+        h1: "",
+        seoTitle: "",
+        seoDescription: "",
+        seoKeywords: "",
+        ogTitle: "",
+        ogImage: "",
+    });
+
+    // Получаем функцию обновления данных с бэкенда через tRPC
+    const { data: categories, refetch: refetchCategories } = api.marketing.getCategories.useQuery();
+
+    // Настройка tRPC-мутации для записи данных в PostgreSQL
+    const createCategory = api.marketing.createCategory.useMutation({
+        onSuccess: () => {
+            alert("🎉 Направление успешно создано и записано в базу!");
+            // Очищаем форму после успешной отправки
+            setCategoryForm({
+                title: "", slug: "", description: "", h1: "",
+                seoTitle: "", seoDescription: "", seoKeywords: "",
+                ogTitle: "", ogImage: ""
+            });
+            void refetchCategories(); // Обновляем локальный список категорий
+        },
+        onError: (err) => alert(`❌ Ошибка базы данных: ${err.message}`),
+    });
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
-
-        // ТВОЙ НАДЕЖНЫЙ ПАРОЛЬ РАЗРАБОТЧИКА (Можешь поменять на любой свой)
-        const masterPassword = "mit3_super_secret_2026";
-
-        if (password === masterPassword) {
-            localStorage.setItem("mit3_admin_auth", "true");
-            setIsAuth(true);
-            setError("");
+        if (password === "mit3_super_secret_2026") {
+            setIsAuthenticated(true);
         } else {
-            setError("Неверный пароль администратора!");
+            alert("❌ Неверный мастер-пароль разработчика!");
         }
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem("mit3_admin_auth");
-        setIsAuth(false);
-        setPassword("");
+    const handleCreateCategory = (e: React.FormEvent) => {
+        e.preventDefault();
+        createCategory.mutate(categoryForm);
     };
-
-    // 1. ИНТЕРФЕЙС РАБОЧЕЙ АДМИНКИ (Показывается сразу при правильном пароле)
-    if (isAuth) {
+    // ЭКРАН 1: АВТОРИЗАЦИЯ ШЛЮЗА БЕЗОПАСНОСТИ
+    if (!isAuthenticated) {
         return (
-            <div className="min-h-screen bg-slate-50 font-sans">
-                {/* Шапка админки */}
-                <header className="flex items-center justify-between border-b border-slate-200 bg-white px-8 py-4 shadow-sm">
+            <div className="min-h-screen bg-slate-950 flex items-center justify-center font-sans px-4">
+                <form onSubmit={handleLogin} className="w-full max-w-md bg-white rounded-3xl p-8 shadow-2xl space-y-6">
+                    <div className="text-center space-y-2">
+                        <span className="text-3xl">🔑</span>
+                        <h1 className="text-2xl font-black tracking-tight text-slate-900">MIT3 GATEWAY</h1>
+                        <p className="text-sm text-slate-400">Введите мастер-пароль для входа в панель</p>
+                    </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900">MIT3 Агентство</h1>
-                        <p className="text-sm text-slate-500">Панель управления цифровой витриной</p>
+                        <input
+                            type="password"
+                            required
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full rounded-xl border border-slate-200 px-4 py-3.5 text-center font-mono text-lg tracking-widest text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition"
+                            placeholder="••••••••••••"
+                        />
                     </div>
-                    <div className="flex items-center gap-4">
-                        <span className="text-sm font-medium text-slate-700 bg-green-50 border border-green-200 px-3 py-1.5 rounded-lg">
-                            Статус: Главный Администратор
-                        </span>
-                        <button
-                            onClick={handleLogout}
-                            className="rounded-lg bg-red-50 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-100 transition"
-                        >
-                            Выйти из панели
-                        </button>
-                    </div>
-                </header>
-
-                {/* Контент админки */}
-                <main className="mx-auto max-w-7xl px-8 py-10">
-                    <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-                        <div className="mb-6 flex items-center justify-between border-b border-slate-100 pb-4">
-                            <h2 className="text-xl font-bold text-slate-800">Маркетинговые услуги (PostgreSQL в Docker)</h2>
-                            <span className="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-                                База онлайн
-                            </span>
-                        </div>
-
-                        <p className="text-slate-600 mb-6">
-                            Вы вошли по мастер-паролю. Ниже загружен список услуг вашей PWA-витрины напрямую из базы данных.
-                        </p>
-
-                        {/* Карточки управления услугами */}
-                        <div className="grid gap-4 md:grid-cols-2">
-                            {["Создание PWA-сайта", "SEO-оптимизация", "SERM (Репутация)", "Content-маркетинг"].map((service, i) => (
-                                <div key={i} className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/50 p-4 hover:border-slate-300 transition">
-                                    <span className="font-semibold text-slate-700">{service}</span>
-                                    <button className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 transition">
-                                        Редактировать цену
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </main>
+                    <button type="submit" className="w-full rounded-xl bg-slate-950 py-3.5 text-sm font-semibold text-white shadow-md hover:bg-slate-800 transition active:scale-[0.99]">
+                        Проверить подпись сессии
+                    </button>
+                </form>
             </div>
         );
     }
 
-    // 2. ФОРМА ВХОДА ПО ПАРОЛЮ (Для гостей)
+    // ЭКРАН 2: ПОЛНОЦЕННАЯ ПАНЕЛЬ УПРАВЛЕНИЯ MARKETING AUTOMATION
     return (
-        <div className="flex min-h-screen items-center justify-center bg-slate-50 font-sans px-4">
-            <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-md">
-                <div className="text-center mb-8">
-                    <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">MIT3 Admin</h2>
-                    <p className="text-sm text-slate-500">Вход по паролю разработчика</p>
-                </div>
-
-                <form onSubmit={handleLogin} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">
-                            Введите мастер-пароль
-                        </label>
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="••••••••••••"
-                            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 transition"
-                            required
-                        />
+        <div className="min-h-screen bg-slate-50 font-sans text-slate-900 flex flex-col md:flex-row">
+            {/* Боковое меню навигации */}
+            <aside className="w-full md:w-64 bg-slate-950 text-slate-400 p-6 flex flex-col justify-between shrink-0 border-r border-slate-800">
+                <div className="space-y-8">
+                    <div className="flex items-center gap-3">
+                        <div className="h-3 w-3 rounded-full bg-emerald-500 animate-pulse"></div>
+                        <span className="font-black text-white tracking-tight">MIT3 CORE v1.5</span>
                     </div>
 
-                    {error && (
-                        <p className="text-sm font-medium text-red-600 bg-red-50 p-3 rounded-lg border border-red-100">
-                            ⚠️ {error}
-                        </p>
-                    )}
+                    <nav className="space-y-1">
+                        <button
+                            type="button"
+                            onClick={() => setActiveTab("categories")}
+                            className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition flex items-center gap-3 ${activeTab === "categories" ? "bg-blue-600 text-white" : "hover:bg-slate-900 hover:text-slate-200"}`}
+                        >
+                            📁 Направления (Хабы)
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setActiveTab("services")}
+                            className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition flex items-center gap-3 ${activeTab === "services" ? "bg-blue-600 text-white" : "hover:bg-slate-900 hover:text-slate-200"}`}
+                        >
+                            💼 Конечные услуги
+                        </button>
+                    </nav>
+                </div>
 
-                    <button
-                        type="submit"
-                        className="flex w-full items-center justify-center rounded-xl bg-slate-900 py-3.5 px-4 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 transition active:scale-[0.98]"
-                    >
-                        Войти в систему
-                    </button>
-                </form>
-            </div>
+                <div className="text-xs border-t border-slate-800 pt-4 space-y-1">
+                    <p className="text-slate-500">Статус системы:</p>
+                    <p className="text-emerald-400 font-semibold">База PostgreSQL онлайн</p>
+                </div>
+            </aside>
+            {/* Основная рабочая область контента */}
+            <main className="flex-grow p-6 md:p-10 max-w-5xl space-y-8 overflow-y-auto">
+                {/* Вкладка 1: Управление Направлениями */}
+                {activeTab === "categories" && (
+                    <div className="space-y-6">
+                        <div className="border-b border-slate-200 pb-4">
+                            <h2 className="text-2xl font-bold tracking-tight">Создание верхнего уровня: Направления</h2>
+                            <p className="text-sm text-slate-500 mt-1">Здесь создаются основные разделы (Разработка, SEO, Маркетинг) со сквозными мета-тегами [1.1].</p>
+                        </div>
+
+                        <form onSubmit={handleCreateCategory} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+                            <div className="grid gap-6 md:grid-cols-2">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Название (Видимое)</label>
+                                    <input type="text" required value={categoryForm.title} onChange={(e) => setCategoryForm(prev => ({ ...prev, title: e.target.value }))} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition" placeholder="Разработка сайтов" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">ЧПУ Ссылка (Slug английскими)</label>
+                                    <input type="text" required value={categoryForm.slug} onChange={(e) => setCategoryForm(prev => ({ ...prev, slug: e.target.value }))} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition" placeholder="razrabotka" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Главный заголовок страницы H1</label>
+                                <input type="text" value={categoryForm.h1} onChange={(e) => setCategoryForm(prev => ({ ...prev, h1: e.target.value }))} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition" placeholder="Профессиональная разработка цифровых решений" />
+                            </div>
+
+                            {/* УЛЬТИМАТИВНЫЙ SEO И OPEN GRAPH БЛОК */}
+                            <div className="bg-slate-50 border border-slate-100 rounded-xl p-5 space-y-4">
+                                <h4 className="text-sm font-bold text-slate-700 flex items-center gap-2">🚀 Параметры продвижения (SEO & Open Graph)</h4>
+
+                                <div className="grid gap-4 md:grid-cols-2">
+                                    <div>
+                                        <label className="block text-xs font-medium text-slate-500 mb-1">SEO Title (Заголовок во вкладке)</label>
+                                        <input type="text" value={categoryForm.seoTitle} onChange={(e) => setCategoryForm(prev => ({ ...prev, seoTitle: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none" placeholder="Разработка PWA и веб-приложений в Москве" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-medium text-slate-500 mb-1">Ключевые слова (Keywords)</label>
+                                        <input type="text" value={categoryForm.seoKeywords} onChange={(e) => setCategoryForm(prev => ({ ...prev, seoKeywords: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none" placeholder="создание pwa, заказать сайт, агентство разработка" />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-medium text-slate-500 mb-1">SEO Description (Сниппет в Яндексе/Google)</label>
+                                    <textarea value={categoryForm.seoDescription} onChange={(e) => setCategoryForm(prev => ({ ...prev, seoDescription: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none h-16 resize-none" placeholder="Закажите разработку высокотехнологичных прогрессивных систем от диджитал-агентства MIT3..." />
+                                </div>
+
+                                <div className="grid gap-4 md:grid-cols-2 border-t border-slate-200/60 pt-3">
+                                    <div>
+                                        <label className="block text-xs font-medium text-slate-500 mb-1">Заголовок ссылки для Telegram (Open Graph Title)</label>
+                                        <input type="text" value={categoryForm.ogTitle} onChange={(e) => setCategoryForm(prev => ({ ...prev, ogTitle: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none" placeholder="Услуги разработки от MIT3 Агентства" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-medium text-slate-500 mb-1">Ссылка на превью картинку карточки в Telegram</label>
+                                        <input type="text" value={categoryForm.ogImage} onChange={(e) => setCategoryForm(prev => ({ ...prev, ogImage: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none" placeholder="https://mit3.ru" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" disabled={createCategory.isPending} className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition disabled:opacity-50">
+                                {createCategory.isPending ? "Запись в базу PostgreSQL..." : "Создать направление и вшить мета-данные"}
+                            </button>
+                        </form>
+                    </div>
+                )}
+
+                {/* Вкладка 2: Временная заглушка для конечных услуг */}
+                {activeTab === "services" && (
+                    <div className="text-center py-12 rounded-2xl border border-dashed border-slate-200 bg-white">
+                        <p className="text-slate-500 font-medium">Управление дочерними услугами</p>
+                        <p className="text-slate-400 text-sm mt-1">Будет доступно сразу после успешного сохранения первого направления верхнего уровня.</p>
+                    </div>
+                )}
+            </main>
         </div>
     );
 }
