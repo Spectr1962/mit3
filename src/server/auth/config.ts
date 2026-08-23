@@ -38,14 +38,15 @@ export const authConfig = {
 
     // НАДЕЖНАЯ ЗАЩИТА ПО USERNAME GITHUB:
     signIn({ user }) {
-      const adminId = "104278065"; // 👈 Замени этот текст на цифры из команды выше
+      const adminId = 104278065;
 
-      if (user.id === adminId) {
-        return true; // Впускаем только тебя по уникальному ID
+      // 👇 ВСТАВЬ ЭТУ СТРОЧКУ СЮДА:
+      console.log("👉 REAL USER ID FROM GITHUB IS:", user.id);
+
+      if (Number(user.id) == adminId) {
+        return true;
       }
-
-      console.log(`🔒 Доступ заблокирован для пользователя: ${user.name}`);
-      return false; // Всех остальных разворачиваем
+      return false;
     },
   },
   pages: {
