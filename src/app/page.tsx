@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { api } from "~/trpc/react";
 import type { Category, Service } from "@prisma/client";
+import "~/styles/globals.css"; // 👈 Убедись, что этот импорт стоит на месте!
+
 
 export const dynamic = "force-dynamic";
 
