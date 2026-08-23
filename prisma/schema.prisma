@@ -54,15 +54,83 @@ model VerificationToken {
 
 // --- ТВОИ МОДЕЛИ ДЛЯ МАРКЕТИНГОВОЙ ВИТРИНЫ ---
 
-// Услуги компании (Каталог)
+// 1. ВЕРХНИЙ СЛОЙ: НАПРАВЛЕНИЯ
+model Category {
+  id              String    @id @default(cuid())
+  title           String    
+  slug            String    @unique 
+  shortTitle      String?   // 👇 Быстрое короткое название для мобильного меню (например, "PWA")
+  description     String?   @db.Text
+  services        Service[] 
+  faqItems        FaqItem[] 
+  projects        Project[] 
+  reviews         Review[]  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt 
+
+  // SEO-БЛОК ДЛЯ НАПРАВЛЕНИЯ
+  seoTitle        String?   
+  seoDescription  String?   @db.Text 
+  seoKeywords     String?   
+  h1              String?   
+  metaRobots      String    @default("index, follow") 
+  canonicalUrl    String?   
+  breadcrumbTitle String?   
+
+  // АВТОМАТИЗАЦИЯ SITEMAP (ДЛЯ СВЕРХБЫСТРОЙ ИНДЕКСАЦИИ)
+  sitemapPriority  Float     @default(1.0)      // 👇 Приоритет страницы в sitemap.xml (от 0.0 до 1.0)
+  sitemapChangefreq String    @default("weekly") // 👇 Как часто обновляется (daily, weekly)
+
+  // КРАСИВЫЕ ССЫЛКИ ДЛЯ МЕССЕНДЖЕРОВ (Open Graph)
+  ogTitle         String?   
+  ogImage         String?   
+
+  ctaTitle        String?   @default("Обсудить проект")
+  ctaDescription  String?   @db.Text
+}
+
+// 2. СРЕДНИЙ СЛОЙ: КОНЕЧНЫЕ УСЛУГИ
 model Service {
-  id          String   @id @default(cuid())
-  title       String
-  slug        String   @unique
-  description String
-  priceFrom   String
-  createdAt   DateTime @default(now())
-  leads       Lead[]
+  id              String   @id @default(cuid())
+  title           String   
+  slug            String   @unique 
+  shortTitle      String?  // 👇 Короткое название для хлебных крошек и мобильных экранов
+  priceFrom       Int      @default(0) 
+  categoryId      String
+  category        Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  modules         Module[] 
+  faqItems        FaqItem[] 
+  projects        Project[] 
+  reviews         Review[]  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt 
+
+  // СЕО-ПАРАМЕТРЫ ДЛЯ СТРАНИЦЫ УСЛУГИ
+  durationDays    Int      @default(5)  
+  techStack       String?  
+  readingTime     Int      @default(3)  // 👇 Время чтения страницы в минутах (например, 3 мин) для фактора доверия
+  relatedIds      String[] @default([]) 
+
+  // SEO-БЛОК ДЛЯ СТРАНИЦЫ УСЛУГИ
+  seoTitle        String?   
+  seoDescription  String?   @db.Text 
+  seoKeywords     String?   
+  h1              String?   
+  contentMarkdown String?   @db.Text 
+  metaRobots      String    @default("index, follow") 
+  canonicalUrl    String?   
+  breadcrumbTitle String?   
+
+  // АВТОМАТИЗАЦИЯ SITEMAP
+  sitemapPriority  Float     @default(0.8)      // 👇 Приоритет для страниц услуг чуть ниже, чем у хабов
+  sitemapChangefreq String    @default("monthly") // 👇 Обновляется реже (monthly)
+
+  // КРАСИВЫЕ ССЫЛКИ ДЛЯ МЕССЕНДЖЕРОВ (Open Graph)
+  ogTitle         String?   
+  ogImage         String?   
+
+  ctaTitle        String?   @default("Рассчитать стоимость услуги")
+  ctaDescription  String?   @db.Text
 }
 
 // Статьи (Блог)
