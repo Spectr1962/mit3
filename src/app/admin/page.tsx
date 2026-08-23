@@ -136,7 +136,7 @@ export default function AdminPage() {
             slug: service.slug,
             categoryId: service.categoryId,
             priceFrom: service.priceFrom,
-            seoDescription: service.seoDescription,
+            seoDescription: service.seoDescription ?? "",
         });
     };
 
