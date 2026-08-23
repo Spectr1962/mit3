@@ -38,12 +38,10 @@ export const authConfig = {
 
     // НАДЕЖНАЯ ЗАЩИТА ПО USERNAME GITHUB:
     signIn({ user }) {
-      const adminEmail = "larionov.igor1987@yandex.ru"; // Твой точный логин на GitHub
+      const adminId = "104278065"; // 👈 Замени этот текст на цифры из команды выше
 
-      console.log("🕵️‍♂️ ДАННЫЕ ИЗ ГИТХАБА ПРИШЛИ:", JSON.stringify(user));
-
-      if (user.email === adminEmail) {
-        return true; // Пропускаем в админку только тебя
+      if (user.id === adminId) {
+        return true; // Впускаем только тебя по уникальному ID
       }
 
       console.log(`🔒 Доступ заблокирован для пользователя: ${user.name}`);
