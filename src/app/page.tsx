@@ -29,7 +29,7 @@ const PORTFOLIO_PROJECTS = [
 ];
 
 export default function Home() {
-  const { data: services } = api.marketing.getServices.useQuery();
+  const { data: services } = api.marketing.getCategories.useQuery();
   const { data: posts } = api.marketing.getPosts.useQuery();
 
   const submitLead = api.marketing.createLead.useMutation({
