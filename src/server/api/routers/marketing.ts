@@ -22,14 +22,15 @@ export const marketingRouter = createTRPCRouter({
         .input(
             z.object({
                 name: z.string().min(2),
-                phone: z.string().min(5),
+                phone: z.string().optional(),     // 👈 СДЕЛАЛИ ОПЦИОНАЛЬНЫМ
+                contact: z.string().optional(),   // 👈 ДОБАВИЛИ ДЛЯ СОВМЕСТИМОСТИ С ФРОНТЕНДОМ
                 email: z.string().email().optional(),
                 serviceId: z.string().optional(),
                 message: z.string().optional(),
             })
         )
         .mutation(async () => {
-            // Имитируем успешное сохранение для фронтенда
             return { success: true, message: "Заявка успешно принята!" };
         }),
+
 });
