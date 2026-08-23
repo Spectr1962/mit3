@@ -16,7 +16,7 @@ export default function AdminPage() {
     const [serviceMode, setServiceMode] = useState<"create" | "edit">("create");
     const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
 
-    // Состояния для форм
+    // Состояния для полей ввода форм
     const [categoryForm, setCategoryForm] = useState({
         title: "", slug: "", description: "", h1: "",
         seoTitle: "", seoDescription: "", seoKeywords: "",
@@ -139,9 +139,6 @@ export default function AdminPage() {
             seoDescription: service.seoDescription ?? "",
         });
     };
-
-
-    // ЭКРАН 1: АВТОРИЗАЦИЯ ШЛЮЗА БЕЗОПАСНОСТИ
     if (!isAuthenticated) {
         return (
             <div className="min-h-screen bg-slate-950 flex items-center justify-center font-sans px-4">
@@ -169,7 +166,6 @@ export default function AdminPage() {
         );
     }
 
-    // ЭКРАН 2: ПОЛНОЦЕННАЯ ПАНЕЛЬ УПРАВЛЕНИЯ MARKETING AUTOMATION
     return (
         <div className="min-h-screen bg-slate-50 font-sans text-slate-900 flex flex-col md:flex-row">
             {/* Боковое меню навигации */}
@@ -207,77 +203,13 @@ export default function AdminPage() {
             <main className="flex-grow p-6 md:p-10 max-w-5xl space-y-8 overflow-y-auto">
                 {/* Вкладка 1: Управление Направлениями */}
                 {activeTab === "categories" && (
-                    <div className="space-y-6">
-                        <div className="border-b border-slate-200 pb-4">
-                            <h2 className="text-2xl font-bold tracking-tight">Создание верхнего уровня: Направления</h2>
-                            <p className="text-sm text-slate-500 mt-1">Здесь создаются основные разделы (Разработка, SEO, Маркетинг) со сквозными мета-тегами [1.1].</p>
-                        </div>
-
-                        <form onSubmit={handleCategorySubmit} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
-                            <div className="grid gap-6 md:grid-cols-2">
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Название (Видимое)</label>
-                                    <input type="text" required value={categoryForm.title} onChange={(e) => setCategoryForm(prev => ({ ...prev, title: e.target.value }))} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition" placeholder="Разработка сайтов" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">ЧПУ Ссылка (Slug английскими)</label>
-                                    <input type="text" required value={categoryForm.slug} onChange={(e) => setCategoryForm(prev => ({ ...prev, slug: e.target.value }))} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition" placeholder="razrabotka" />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Главный заголовок страницы H1</label>
-                                <input type="text" value={categoryForm.h1} onChange={(e) => setCategoryForm(prev => ({ ...prev, h1: e.target.value }))} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition" placeholder="Профессиональная разработка цифровых решений" />
-                            </div>
-
-                            {/* УЛЬТИМАТИВНЫЙ SEO И OPEN GRAPH БЛОК */}
-                            <div className="bg-slate-50 border border-slate-100 rounded-xl p-5 space-y-4">
-                                <h4 className="text-sm font-bold text-slate-700 flex items-center gap-2">🚀 Параметры продвижения (SEO & Open Graph)</h4>
-
-                                <div className="grid gap-4 md:grid-cols-2">
-                                    <div>
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">SEO Title (Заголовок во вкладке)</label>
-                                        <input type="text" value={categoryForm.seoTitle} onChange={(e) => setCategoryForm(prev => ({ ...prev, seoTitle: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none" placeholder="Разработка PWA и веб-приложений в Москве" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">Ключевые слова (Keywords)</label>
-                                        <input type="text" value={categoryForm.seoKeywords} onChange={(e) => setCategoryForm(prev => ({ ...prev, seoKeywords: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none" placeholder="создание pwa, заказать сайт, агентство разработка" />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="block text-xs font-medium text-slate-500 mb-1">SEO Description (Сниппет в Яндексе/Google)</label>
-                                    <textarea value={categoryForm.seoDescription} onChange={(e) => setCategoryForm(prev => ({ ...prev, seoDescription: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none h-16 resize-none" placeholder="Закажите разработку высокотехнологичных прогрессивных систем от диджитал-агентства MIT3..." />
-                                </div>
-
-                                <div className="grid gap-4 md:grid-cols-2 border-t border-slate-200/60 pt-3">
-                                    <div>
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">Заголовок ссылки для Telegram (Open Graph Title)</label>
-                                        <input type="text" value={categoryForm.ogTitle} onChange={(e) => setCategoryForm(prev => ({ ...prev, ogTitle: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none" placeholder="Услуги разработки от MIT3 Агентства" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">Ссылка на превью картинку карточки в Telegram</label>
-                                        <input type="text" value={categoryForm.ogImage} onChange={(e) => setCategoryForm(prev => ({ ...prev, ogImage: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none" placeholder="https://mit3.ru" />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button type="submit" disabled={createCategory.isPending} className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition disabled:opacity-50">
-                                {createCategory.isPending ? "Запись в базу PostgreSQL..." : "Создать направление и вшить мета-данные"}
-                            </button>
-                        </form>
-                    </div>
-                )}
-
-                {/* Вкладка 1: Управление Направлениями */}
-                {activeTab === "categories" && (
                     <div className="space-y-10">
                         <div className="border-b border-slate-200 pb-4 flex items-center justify-between">
                             <div>
                                 <h2 className="text-2xl font-bold tracking-tight">
                                     {categoryMode === "edit" ? "✏️ Редактирование направления" : "📁 Создание направления"}
                                 </h2>
-                                <p className="text-sm text-slate-500 mt-1">Управление разделами сайта, SEO и Open Graph разметкой хабов [1.1].</p>
+                                <p className="text-sm text-slate-500 mt-1">Управление разделами сайта, SEO и Open Graph разметкой хабов.</p>
                             </div>
                             {categoryMode === "edit" && (
                                 <button type="button" onClick={resetCategoryForm} className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition">
@@ -303,34 +235,30 @@ export default function AdminPage() {
                                 <input type="text" value={categoryForm.h1} onChange={(e) => setCategoryForm(prev => ({ ...prev, h1: e.target.value }))} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition" placeholder="Профессиональная разработка цифровых решений" />
                             </div>
 
-                            {/* УЛЬТИМАТИВНЫЙ SEO И OPEN GRAPH БЛОК */}
                             <div className="bg-slate-50 border border-slate-100 rounded-xl p-5 space-y-4">
                                 <h4 className="text-sm font-bold text-slate-700 flex items-center gap-2">🚀 Параметры продвижения (SEO & Open Graph)</h4>
-
                                 <div className="grid gap-4 md:grid-cols-2">
                                     <div>
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">SEO Title (Заголовок во вкладке)</label>
-                                        <input type="text" value={categoryForm.seoTitle} onChange={(e) => setCategoryForm(prev => ({ ...prev, seoTitle: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none" placeholder="Разработка PWA и веб-приложений в Москве" />
+                                        <label className="block text-xs font-medium text-slate-500 mb-1">SEO Title</label>
+                                        <input type="text" value={categoryForm.seoTitle} onChange={(e) => setCategoryForm(prev => ({ ...prev, seoTitle: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none" placeholder="Разработка PWA" />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">Ключевые слова (Keywords)</label>
-                                        <input type="text" value={categoryForm.seoKeywords} onChange={(e) => setCategoryForm(prev => ({ ...prev, seoKeywords: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none" placeholder="создание pwa, заказать сайт, агентство разработка" />
+                                        <label className="block text-xs font-medium text-slate-500 mb-1">Ключевые слова</label>
+                                        <input type="text" value={categoryForm.seoKeywords} onChange={(e) => setCategoryForm(prev => ({ ...prev, seoKeywords: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none" placeholder="создание pwa" />
                                     </div>
                                 </div>
-
                                 <div>
-                                    <label className="block text-xs font-medium text-slate-500 mb-1">SEO Description (Сниппет в Яндексе/Google)</label>
-                                    <textarea value={categoryForm.seoDescription} onChange={(e) => setCategoryForm(prev => ({ ...prev, seoDescription: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none h-16 resize-none" placeholder="Закажите разработку высокотехнологичных прогрессивных систем от диджитал-агентства MIT3..." />
+                                    <label className="block text-xs font-medium text-slate-500 mb-1">SEO Description</label>
+                                    <textarea value={categoryForm.seoDescription} onChange={(e) => setCategoryForm(prev => ({ ...prev, seoDescription: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none h-16 resize-none" placeholder="Закажите разработку..." />
                                 </div>
-
                                 <div className="grid gap-4 md:grid-cols-2 border-t border-slate-200/60 pt-3">
                                     <div>
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">Заголовок ссылки для Telegram (Open Graph Title)</label>
-                                        <input type="text" value={categoryForm.ogTitle} onChange={(e) => setCategoryForm(prev => ({ ...prev, ogTitle: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none" placeholder="Услуги разработки от MIT3 Агентства" />
+                                        <label className="block text-xs font-medium text-slate-500 mb-1">OG Title для Telegram</label>
+                                        <input type="text" value={categoryForm.ogTitle} onChange={(e) => setCategoryForm(prev => ({ ...prev, ogTitle: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none" placeholder="Услуги разработки" />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">Ссылка на превью картинку карточки в Telegram</label>
-                                        <input type="text" value={categoryForm.ogImage} onChange={(e) => setCategoryForm(prev => ({ ...prev, ogImage: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none" placeholder="https://mit3.ru" />
+                                        <label className="block text-xs font-medium text-slate-500 mb-1">Ссылка на OG Image</label>
+                                        <input type="text" value={categoryForm.ogImage} onChange={(e) => setCategoryForm(prev => ({ ...prev, ogImage: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none" placeholder="https://..." />
                                     </div>
                                 </div>
                             </div>
@@ -340,7 +268,6 @@ export default function AdminPage() {
                             </button>
                         </form>
 
-                        {/* СПИСОК СУЩЕСТВУЮЩИХ НАПРАВЛЕНИЙ ДЛЯ РЕДАКТИРОВАНИЯ */}
                         <div className="space-y-4">
                             <h3 className="text-lg font-bold tracking-tight text-slate-800">Активные направления в базе PostgreSQL</h3>
                             <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
@@ -354,7 +281,7 @@ export default function AdminPage() {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-100">
-                                            {categories.map((cat: any) => (
+                                            {categories.map((cat: Category) => (
                                                 <tr key={cat.id} className="hover:bg-slate-50/80 transition">
                                                     <td className="px-6 py-4 font-semibold text-slate-900">{cat.title}</td>
                                                     <td className="px-6 py-4 font-mono text-slate-500 text-xs">/services/{cat.slug}</td>
@@ -374,8 +301,98 @@ export default function AdminPage() {
                         </div>
                     </div>
                 )}
+                {/* Вкладка 2: Управление Конечными Услугами */}
+                {activeTab === "services" && (
+                    <div className="space-y-10">
+                        <div className="border-b border-slate-200 pb-4 flex items-center justify-between">
+                            <div>
+                                <h2 className="text-2xl font-bold tracking-tight">
+                                    {serviceMode === "edit" ? "✏️ Редактирование услуги" : "💼 Создание конечной услуги"}
+                                </h2>
+                                <p className="text-sm text-slate-500 mt-1">Привязка и обновление конкретных коммерческих продуктов внутри направлений [2.2].</p>
+                            </div>
+                            {serviceMode === "edit" && (
+                                <button type="button" onClick={resetServiceForm} className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition">
+                                    Отменить редактирование
+                                </button>
+                            )}
+                        </div>
 
+                        <form onSubmit={handleServiceSubmit} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+                            <div className="grid gap-6 md:grid-cols-2">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Родительское направление</label>
+                                    <select required value={serviceForm.categoryId} onChange={(e) => setServiceForm(prev => ({ ...prev, categoryId: e.target.value }))} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:border-blue-500 bg-white transition">
+                                        <option value="">-- Выберите направление --</option>
+                                        {categories?.map((cat: Category) => (
+                                            <option key={cat.id} value={cat.id}>{cat.title}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Название услуги</label>
+                                    <input type="text" required value={serviceForm.title} onChange={(e) => setServiceForm(prev => ({ ...prev, title: e.target.value }))} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition" placeholder="Разработка PWA" />
+                                </div>
+                            </div>
 
+                            <div className="grid gap-6 md:grid-cols-2">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">ЧПУ Ссылка (Slug услуги)</label>
+                                    <input type="text" required value={serviceForm.slug} onChange={(e) => setServiceForm(prev => ({ ...prev, slug: e.target.value }))} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition" placeholder="pwa-development" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Стоимость от (₽)</label>
+                                    <input type="number" required value={serviceForm.priceFrom} onChange={(e) => setServiceForm(prev => ({ ...prev, priceFrom: Number(e.target.value) }))} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition" placeholder="49000" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Краткое SEO Описание</label>
+                                <input type="text" required value={serviceForm.seoDescription} onChange={(e) => setServiceForm(prev => ({ ...prev, seoDescription: e.target.value }))} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition" placeholder="Прогрессивные приложения..." />
+                            </div>
+
+                            <button type="submit" disabled={createService.isPending || updateService.isPending} className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition disabled:opacity-50">
+                                {serviceMode === "edit" ? "Сохранить изменения услуги" : "Опубликовать коммерческую услугу"}
+                            </button>
+                        </form>
+
+                        <div className="space-y-4">
+                            <h3 className="text-lg font-bold tracking-tight text-slate-800">Все активные услуги по направлениям</h3>
+                            <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                                {categories && categories.some((cat: Category & { services?: Service[] }) => (cat.services?.length ?? 0) > 0) ? (
+                                    <table className="w-full text-left border-collapse text-sm">
+                                        <thead>
+                                            <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold text-xs uppercase tracking-wider">
+                                                <th className="px-6 py-4">Название услуги</th>
+                                                <th className="px-6 py-4">Направление</th>
+                                                <th className="px-6 py-4">Цена</th>
+                                                <th className="px-6 py-4 text-right">Действие</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100">
+                                            {categories.map((cat: Category & { services?: Service[] }) =>
+                                                cat.services?.map((ser: Service) => (
+                                                    <tr key={ser.id} className="hover:bg-slate-50/80 transition">
+                                                        <td className="px-6 py-4 font-semibold text-slate-900">{ser.title}</td>
+                                                        <td className="px-6 py-4 text-slate-500"><span className="bg-slate-100 text-slate-700 px-2 py-1 rounded-md text-xs font-medium">{cat.title}</span></td>
+                                                        <td className="px-6 py-4 font-mono font-bold text-blue-600">{ser.priceFrom} ₽</td>
+                                                        <td className="px-6 py-4 text-right">
+                                                            <button type="button" onClick={() => startEditService(ser)} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition shadow-sm">
+                                                                ✏️ Редактировать
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            )}
+                                        </tbody>
+                                    </table>
+                                ) : (
+                                    <p className="p-6 text-center text-slate-400 text-sm">Услуги в базе данных пока отсутствуют.</p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
             </main>
         </div>
     );
