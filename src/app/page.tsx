@@ -119,7 +119,7 @@ export default function Home() {
                 <h3 className="text-xl font-bold group-hover:text-blue-600 transition-colors">{service.title}</h3>
                 <span className="text-sm font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg">{service.priceFrom}</span>
               </div>
-              <p className="mt-3 text-slate-600 text-sm leading-relaxed">{service.description}</p>
+              <p className="mt-3 text-slate-600 text-sm leading-relaxed">{service.seoDescription}</p>
               <div className="mt-4 text-xs font-medium text-slate-400">
                 {form.serviceId === service.id ? "✓ Услуга выбрана" : "+ Выбрать для расчета стоимости"}
               </div>
