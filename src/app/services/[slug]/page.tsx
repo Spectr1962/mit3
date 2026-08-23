@@ -31,8 +31,8 @@ export default async function ServicePage({ params }: Props) {
         "@context": "https://schema.org",
         "@type": "Product",
         "name": service.title,
-        "description": service.seoDescription || service.title,
-        "image": service.ogImage || "https://mit3.ru",
+        "description": service.seoDescription ?? service.title,
+        "image": service.ogImage ?? "https://mit3.ru",
         "offers": {
             "@type": "Offer",
             "price": service.priceFrom,
@@ -80,7 +80,7 @@ export default async function ServicePage({ params }: Props) {
 
             {/* ВИДИМАЯ ВЕРСТКА СТРАНИЦЫ ДЛЯ КЛИЕНТОВ */}
             <main className="mx-auto max-w-4xl px-4 py-12 font-sans">
-                <h1 className="text-4xl font-extrabold mb-4">{service.h1 || service.title}</h1>
+                <h1 className="text-4xl font-extrabold mb-4">{service.h1 ?? service.title}</h1>
                 <p className="text-xl text-green-600 font-bold mb-8">Стоимость: от {service.priceFrom} ₽</p>
 
                 {/* Вывод модулей, кейсов и отзывов на экране... */}

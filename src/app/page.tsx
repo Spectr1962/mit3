@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { api } from "~/trpc/react";
+import type { Category, Service } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -108,20 +109,18 @@ export default function Home() {
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2">
-          {/* Сначала перебираем Направления (Категории) */}
-          {services?.map((category: any) => (
+          {services?.map((category: Category & { services: Service[] }) => (
             <div key={category.id} className="mb-12">
               <h2 className="text-2xl font-bold text-slate-800 mb-6">{category.title}</h2>
 
-              {/* А внутри каждого Направления выводим его конечные услуги */}
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {category.services?.map((service: any) => (
+                {category.services?.map((service: Service) => (
                   <div key={service.id} className="group flex flex-col bg-white rounded-2xl p-6 shadow-sm border border-slate-200/60 hover:border-blue-500 transition-all">
                     <div className="flex items-start justify-between">
                       <h3 className="text-xl font-bold group-hover:text-blue-600 transition-colors">{service.title}</h3>
                       <span className="text-sm font-semibold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg">{service.priceFrom} ₽</span>
                     </div>
-                    <p className="mt-3 text-slate-600 text-sm leading-relaxed flex-grow">{service.seoDescription}</p>
+                    <p className="mt-3 text-slate-600 text-sm leading-relaxed flex-grow">{service.seoDescription ?? ""}</p>
 
                     <div className="mt-4 text-xs font-medium text-slate-400">
                       {form.serviceId === service.id ? "✓ Услуга выбрана" : "+ Выбрать для расчета стоимости"}
@@ -131,7 +130,6 @@ export default function Home() {
               </div>
             </div>
           ))}
-
         </div>
       </section>
 
