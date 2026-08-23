@@ -2,7 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
 export const marketingRouter = createTRPCRouter({
-    // 1. Получить все направления (Категории) со всеми привязанными услугами
+    // 1. Получить все направления со всеми услугами
     getCategories: publicProcedure.query(async ({ ctx }) => {
         return await ctx.db.category.findMany({
             include: {
@@ -12,7 +12,7 @@ export const marketingRouter = createTRPCRouter({
         });
     }),
 
-    // 2. Метод записи Направления из админки в PostgreSQL
+    // 2. Создать Направление
     createCategory: publicProcedure
         .input(
             z.object({
@@ -43,7 +43,41 @@ export const marketingRouter = createTRPCRouter({
             });
         }),
 
-    // 🔥 3. ТОТ САМЫЙ МЕТОД: ЗАПИСЬ КОНЕЧНОЙ УСЛУГИ С ПРИВЯЗКОЙ К НАПРАВЛЕНИЮ
+    // 📁 3. ОБНОВИТЬ НАПРАВЛЕНИЕ (РЕДАКТИРОВАНИЕ)
+    updateCategory: publicProcedure
+        .input(
+            z.object({
+                id: z.string(),
+                title: z.string().min(2),
+                slug: z.string().min(2),
+                description: z.string().optional(),
+                h1: z.string().optional(),
+                seoTitle: z.string().optional(),
+                seoDescription: z.string().optional(),
+                seoKeywords: z.string().optional(),
+                ogTitle: z.string().optional(),
+                ogImage: z.string().optional(),
+            })
+        )
+        .mutation(async ({ ctx, input }) => {
+            const { id, ...data } = input;
+            return await ctx.db.category.update({
+                where: { id },
+                data: {
+                    ...data,
+                    slug: data.slug.toLowerCase().trim(),
+                    description: data.description ?? null,
+                    h1: data.h1 ?? null,
+                    seoTitle: data.seoTitle ?? null,
+                    seoDescription: data.seoDescription ?? null,
+                    seoKeywords: data.seoKeywords ?? null,
+                    ogTitle: data.ogTitle ?? null,
+                    ogImage: data.ogImage ?? null,
+                },
+            });
+        }),
+
+    // 4. Создать Конечную Услугу
     createService: publicProcedure
         .input(
             z.object({
@@ -66,12 +100,33 @@ export const marketingRouter = createTRPCRouter({
             });
         }),
 
-    // Старая заглушка постов блога, чтобы не падала главная страница
+    // 💼 5. ОБНОВИТЬ КОНЕЧНУЮ УСЛУГУ (РЕДАКТИРОВАНИЕ)
+    updateService: publicProcedure
+        .input(
+            z.object({
+                id: z.string(),
+                title: z.string().min(2),
+                slug: z.string().min(2),
+                categoryId: z.string().min(2),
+                priceFrom: z.number().min(0),
+                seoDescription: z.string().min(2),
+            })
+        )
+        .mutation(async ({ ctx, input }) => {
+            const { id, ...data } = input;
+            return await ctx.db.service.update({
+                where: { id },
+                data: {
+                    ...data,
+                    slug: data.slug.toLowerCase().trim(),
+                },
+            });
+        }),
+
     getPosts: publicProcedure.query(() => {
         return [];
     }),
 
-    // Обработка заявок с главной страницы
     createLead: publicProcedure
         .input(
             z.object({
