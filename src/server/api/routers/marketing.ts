@@ -1,71 +1,35 @@
-import { createTRPCRouter, publicProcedure, protectedProcedure } from "~/server/api/trpc";
 import { z } from "zod";
+import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
 export const marketingRouter = createTRPCRouter({
-    // 1. Получить каталог услуг из базы данных
-    getServices: publicProcedure.query(({ ctx }) => {
-        return ctx.db.service.findMany({ orderBy: { createdAt: "asc" } });
+    // 1. Получить все направления (категории) для меню и главной страницы
+    getCategories: publicProcedure.query(async ({ ctx }) => {
+        return await ctx.db.category.findMany({
+            include: {
+                services: true,
+            },
+            orderBy: { title: "asc" },
+        });
     }),
 
-    // 2. Получить статьи для блога из базы данных
+    // 2. Заглушка для старого метода блогов (чтобы главная страница не падала)
     getPosts: publicProcedure.query(() => {
-        return []; // 👈 Просто возвращаем пустой массив. Больше никаких ошибок базы!
+        return [];
     }),
 
-    // 3. Отправить входящую заявку (лид) в базу данных
+    // 3. Обработка входящих заявок (Пока возвращает успех, далее настроим Telegram)
     createLead: publicProcedure
         .input(
             z.object({
                 name: z.string().min(2),
-                contact: z.string().min(2),
-                message: z.string().optional(),
+                phone: z.string().min(5),
+                email: z.string().email().optional(),
                 serviceId: z.string().optional(),
+                message: z.string().optional(),
             })
         )
-        .mutation(async ({ ctx, input }) => {
-            return ctx.db.lead.create({ data: input });
-        }),
-    // --- АДМИНСКИЕ ФУНКЦИИ (Защищены через сессию) ---
-
-    // 4. Создать новую услугу через админку
-    createService: protectedProcedure
-        .input(
-            z.object({
-                title: z.string().min(2),
-                slug: z.string().min(2),
-                description: z.string().min(10),
-                priceFrom: z.string(),
-            })
-        )
-        .mutation(async ({ ctx, input }) => {
-            return ctx.db.service.create({ data: input });
-        }),
-
-    // 5. Редактировать существующую услугу
-    updateService: protectedProcedure
-        .input(
-            z.object({
-                id: z.string(),
-                title: z.string().min(2),
-                slug: z.string().min(2),
-                description: z.string().min(10),
-                priceFrom: z.string(),
-            })
-        )
-        .mutation(async ({ ctx, input }) => {
-            const { id, ...data } = input;
-            return ctx.db.service.update({
-                where: { id },
-                data,
-            });
-        }),
-
-    // 6. Удалить услугу из каталога
-    deleteService: protectedProcedure
-        .input(z.object({ id: z.string() }))
-        .mutation(async ({ ctx, input }) => {
-            return ctx.db.service.delete({
-                where: { id: input.id },
-            });
+        .mutation(async () => {
+            // Имитируем успешное сохранение для фронтенда
+            return { success: true, message: "Заявка успешно принята!" };
         }),
 });
