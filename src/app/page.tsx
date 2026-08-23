@@ -1,19 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { api } from "~/trpc/react";
 import type { Category, Service } from "@prisma/client";
 
-// Описываем строгий тип данных: Категория, внутри которой ОБЯЗАТЕЛЬНО идет массив Услуг
+// Строгий тип: Направление, внутри которого гарантированно идёт массив Услуг
 type CategoryWithServices = Category & {
   services: Service[];
 };
 
-
 export default function HomePage() {
   const { data: categories } = api.marketing.getCategories.useQuery();
-  const safeCategories = categories ?? [];
-
 
   const [form, setForm] = useState({
     name: "",
@@ -22,6 +19,11 @@ export default function HomePage() {
     serviceId: "",
   });
 
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const submitLead = api.marketing.createLead.useMutation();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -29,11 +31,22 @@ export default function HomePage() {
     submitLead.mutate(form);
   };
 
+  const safeCategories = categories ?? [];
+
+  // Защита от Hydration Error в строгом WebKit Safari
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center font-sans">
+        <div className="text-slate-400 font-medium animate-pulse">Загрузка интерфейса MIT3...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-blue-500 selection:text-white">
-      {/* Шапка / Навигация */}
+      {/* Шапка сайта */}
       <header className="mx-auto max-w-7xl px-6 py-6 flex items-center justify-between border-b border-slate-200/60 bg-white/80 backdrop-blur-md sticky top-0 z-50 rounded-b-2xl shadow-sm">
-        <span className="text-xl font-black tracking-tight text-blue-600">⚡ DIGITAL.AGENCY</span>
+        <span className="text-xl font-black tracking-tight text-blue-600">⚡ MIT3.RU</span>
         <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-600">
           <a href="#about" className="hover:text-blue-600 transition">О проекте</a>
           <a href="#catalog" className="hover:text-blue-600 transition">Услуги</a>
@@ -42,27 +55,26 @@ export default function HomePage() {
       </header>
 
       <main className="mx-auto max-w-7xl px-6 py-12 space-y-20">
-        {/* Главный блок / О проекте */}
+        {/* Информационный хаб */}
         <section id="about" className="space-y-4 max-w-3xl">
           <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl leading-tight">
-            Помогаю бизнесу расти в цифровой среде
+            Комплексный цифровой маркетинг и разработка
           </h1>
           <p className="text-lg text-slate-600 leading-relaxed">
-            Я занимаюсь комплексным цифровым маркетингом. Создаю современные PWA-сайты, вывожу проекты в ТОП поисковиков и настраиваю стабильный поток клиентов. Этот сайт — демонстрация технологичного MVP на Т3-стеке.
+            Создаем современные PWA-сайты, проектируем сложные модульные системы и выводим бизнес в ТОП поисковых систем Яндекс и Google с помощью продвинутых SEO-технологий.
           </p>
         </section>
 
-        {/* Раздел: Каталог Услуг */}
+        {/* Секция: Динамический каталог услуг из PostgreSQL */}
         <section id="catalog" className="space-y-8">
           <div className="border-b border-slate-200 pb-4">
-            <h2 className="text-3xl font-bold tracking-tight text-slate-900">Каталог Направлений и Услуг</h2>
-            <p className="mt-2 text-sm text-slate-500">Нажмите на карточку услуги, чтобы прикрепить её к форме заявки</p>
+            <h2 className="text-3xl font-bold tracking-tight text-slate-900">Направления услуг</h2>
+            <p className="mt-2 text-sm text-slate-500">Выберите необходимую услугу для автоматического прикрепления к расчету стоимости</p>
           </div>
 
-          {/* Строгая проверка: если данные загрузились и массив не пуст */}
-          {categories && categories.length > 0 ? (
+          {safeCategories.length > 0 ? (
             <div className="space-y-12">
-              {categories.map((category: CategoryWithServices) => (
+              {safeCategories.map((category: CategoryWithServices) => (
                 <div key={category.id} className="space-y-6">
                   <h3 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
                     <span className="h-2 w-2 rounded-full bg-blue-600"></span>
@@ -70,16 +82,15 @@ export default function HomePage() {
                   </h3>
 
                   <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {safeCategories.length > 0 ? (
-                      safeCategories.map((category: CategoryWithServices) => (
-
+                    {category.services && category.services.length > 0 ? (
+                      category.services.map((service: Service) => (
                         <button
                           key={service.id}
                           type="button"
                           onClick={() => setForm((prev) => ({ ...prev, serviceId: service.id }))}
                           className={`group flex flex-col text-left bg-white rounded-2xl p-6 shadow-sm border transition-all duration-300 ${form.serviceId === service.id
-                            ? "border-blue-500 ring-2 ring-blue-500/20 shadow-md"
-                            : "border-slate-200/80 hover:border-slate-300 hover:shadow-md"
+                              ? "border-blue-500 ring-2 ring-blue-500/20 shadow-md"
+                              : "border-slate-200/80 hover:border-slate-300 hover:shadow-md"
                             }`}
                         >
                           <div className="flex items-start justify-between w-full gap-4">
@@ -108,17 +119,17 @@ export default function HomePage() {
           ) : (
             <div className="text-center py-12 rounded-2xl border border-dashed border-slate-200 bg-slate-50/50">
               <p className="text-slate-500 font-medium">Каталог услуг пуст.</p>
-              <p className="text-slate-400 text-sm mt-1">Зайдите в админку, чтобы создать первое направление и услуги.</p>
+              <p className="text-slate-400 text-sm mt-1">Зайдите в админку, чтобы создать первое направление и дочерние услуги.</p>
             </div>
           )}
         </section>
 
-        {/* Раздел: Контакты / Лидогенерация */}
+        {/* Форма лидогенерации */}
         <section id="contacts" className="grid gap-12 lg:grid-cols-2 items-start border-t border-slate-200 pt-12">
           <div className="space-y-4">
-            <h2 className="text-3xl font-bold tracking-tight text-slate-900">Давайте начнем проект</h2>
+            <h2 className="text-3xl font-bold tracking-tight text-slate-900">Рассчитать стоимость</h2>
             <p className="text-slate-600 leading-relaxed">
-              Оставьте заявку, заполнив форму справа. Я свяжусь с вами в течение часа, чтобы обсудить детали и рассчитать точную стоимость решения под ваш бизнес.
+              Оставьте контакты и выберите интересующее направление. Система автоматически сформирует спецификацию проекта на основе модулей цен базы данных.
             </p>
           </div>
 
