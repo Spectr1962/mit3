@@ -158,7 +158,7 @@ export default function Home() {
           </div>
 
           <div className="grid gap-8 md:grid-cols-2">
-            {posts?.map((post) => (
+            {posts?.map((post: any) => (
               <article key={post.id} className="flex flex-col bg-white rounded-2xl p-6 shadow-sm border border-slate-200/40">
                 <span className="text-xs text-slate-400 mb-2">⏱️ {post.readTime} чтения</span>
                 <h3 className="text-xl font-bold text-slate-900 mb-2">{post.title}</h3>
