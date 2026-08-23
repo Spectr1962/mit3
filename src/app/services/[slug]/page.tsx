@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { db } from "@/server/db"; // Путь к твоей Prisma БД
+import { db } from "~/server/db"; // Путь к твоей Prisma БД
 
 interface Props {
     params: Promise<{ slug: string }>;
