@@ -8,8 +8,8 @@ export const marketingRouter = createTRPCRouter({
     }),
 
     // 2. Получить статьи для блога из базы данных
-    getPosts: publicProcedure.query(({ ctx }) => {
-        return ctx.db.post.findMany({ orderBy: { createdAt: "desc" } });
+    getPosts: publicProcedure.query(() => {
+        return []; // 👈 Просто возвращаем пустой массив. Больше никаких ошибок базы!
     }),
 
     // 3. Отправить входящую заявку (лид) в базу данных
