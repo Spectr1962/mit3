@@ -161,19 +161,6 @@ export default function Home() {
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mt-1">Блог об интернет-маркетинге</h2>
             <p className="mt-2 text-slate-600">Делюсь инсайтами, которые внедряю клиентам</p>
           </div>
-
-          <div className="grid gap-8 md:grid-cols-2">
-            {posts?.map((post: any) => (
-              <article key={post.id} className="flex flex-col bg-white rounded-2xl p-6 shadow-sm border border-slate-200/40">
-                <span className="text-xs text-slate-400 mb-2">⏱️ {post.readTime} чтения</span>
-                <h3 className="text-xl font-bold text-slate-900 mb-2">{post.title}</h3>
-                <p className="text-slate-600 text-sm flex-1 mb-4">{post.excerpt}</p>
-                <a href="#contact" className="text-sm font-semibold text-blue-600 hover:text-blue-700 mt-auto">
-                  Обсудить стратегию →
-                </a>
-              </article>
-            ))}
-          </div>
         </div>
       </section>
 
