@@ -9,8 +9,11 @@ type CategoryWithServices = Category & {
   services: Service[];
 };
 
+
 export default function HomePage() {
   const { data: categories } = api.marketing.getCategories.useQuery();
+  const safeCategories = categories ?? [];
+
 
   const [form, setForm] = useState({
     name: "",
@@ -67,15 +70,16 @@ export default function HomePage() {
                   </h3>
 
                   <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {category.services && category.services.length > 0 ? (
-                      category.services.map((service: Service) => (
+                    {safeCategories.length > 0 ? (
+                      safeCategories.map((category: CategoryWithServices) => (
+
                         <button
                           key={service.id}
                           type="button"
                           onClick={() => setForm((prev) => ({ ...prev, serviceId: service.id }))}
                           className={`group flex flex-col text-left bg-white rounded-2xl p-6 shadow-sm border transition-all duration-300 ${form.serviceId === service.id
-                              ? "border-blue-500 ring-2 ring-blue-500/20 shadow-md"
-                              : "border-slate-200/80 hover:border-slate-300 hover:shadow-md"
+                            ? "border-blue-500 ring-2 ring-blue-500/20 shadow-md"
+                            : "border-slate-200/80 hover:border-slate-300 hover:shadow-md"
                             }`}
                         >
                           <div className="flex items-start justify-between w-full gap-4">
