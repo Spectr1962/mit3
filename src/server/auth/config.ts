@@ -21,8 +21,8 @@ export const authConfig = {
   adapter: PrismaAdapter(db),
   providers: [
     GitHubProvider({
-      clientId: env.GITHUB_CLIENT_ID,
-      clientSecret: env.GITHUB_CLIENT_SECRET
+      clientId: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
     })
   ],
   secret: process.env.AUTH_SECRET, // Обязательный секрет для шифрования куки локально
