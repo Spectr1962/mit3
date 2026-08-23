@@ -23,6 +23,7 @@ export const authConfig = {
     GitHubProvider({
       clientId: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      issuer: "https://github.com/login/oauth",
     })
   ],
   secret: process.env.AUTH_SECRET, // Обязательный секрет для шифрования куки локально
