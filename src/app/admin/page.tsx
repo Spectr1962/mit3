@@ -10,34 +10,67 @@ export default function AdminPage() {
 
     // Состояние полей для создания Направления
     const [categoryForm, setCategoryForm] = useState({
-        title: "",
-        slug: "",
-        description: "",
-        h1: "",
-        seoTitle: "",
+        title: "", slug: "", description: "", h1: "",
+        seoTitle: "", seoDescription: "", seoKeywords: "",
+        ogTitle: "", ogImage: "",
+    });
+
+    // 👇 НОВОЕ: Состояние полей для создания Конечной Услуги
+    const [serviceForm, setServiceForm] = useState({
+        title: "", slug: "", categoryId: "", priceFrom: 0,
         seoDescription: "",
-        seoKeywords: "",
-        ogTitle: "",
-        ogImage: "",
     });
 
     // Получаем функцию обновления данных с бэкенда через tRPC
     const { data: categories, refetch: refetchCategories } = api.marketing.getCategories.useQuery();
 
-    // Настройка tRPC-мутации для записи данных в PostgreSQL
+    // Настройка tRPC-мутации для записи Направления в PostgreSQL
     const createCategory = api.marketing.createCategory.useMutation({
         onSuccess: () => {
             alert("🎉 Направление успешно создано и записано в базу!");
-            // Очищаем форму после успешной отправки
             setCategoryForm({
                 title: "", slug: "", description: "", h1: "",
                 seoTitle: "", seoDescription: "", seoKeywords: "",
                 ogTitle: "", ogImage: ""
             });
-            void refetchCategories(); // Обновляем локальный список категорий
+            void refetchCategories();
         },
         onError: (err) => alert(`❌ Ошибка базы данных: ${err.message}`),
     });
+
+    // 👇 НОВОЕ: Настройка tRPC-мутации для записи Услуги в PostgreSQL
+    const createService = api.marketing.createService.useMutation({
+        onSuccess: () => {
+            alert("💼 Конечная услуга успешно привязана к направлению и записана!");
+            setServiceForm({ title: "", slug: "", categoryId: "", priceFrom: 0, seoDescription: "" });
+            void refetchCategories(); // Перезапрашиваем структуру для главной страницы
+        },
+        onError: (err) => alert(`❌ Ошибка базы данных: ${err.message}`),
+    });
+
+    const handleLogin = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (password === "mit3_super_secret_2026") {
+            setIsAuthenticated(true);
+        } else {
+            alert("❌ Неверный мастер-пароль разработчика!");
+        }
+    };
+
+    const handleCreateCategory = (e: React.FormEvent) => {
+        e.preventDefault();
+        createCategory.mutate(categoryForm);
+    };
+
+    // 👇 НОВОЕ: Функция отправки формы создания Услуги
+    const handleCreateService = (e: React.FormEvent) => {
+        e.preventDefault();
+        createService.mutate({
+            ...serviceForm,
+            priceFrom: Number(serviceForm.priceFrom), // Принудительно приводим к числу для базы данных
+        });
+    };
+
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
@@ -180,13 +213,54 @@ export default function AdminPage() {
                     </div>
                 )}
 
-                {/* Вкладка 2: Временная заглушка для конечных услуг */}
+                {/* Вкладка 2: Управление Конечными Услугами */}
                 {activeTab === "services" && (
-                    <div className="text-center py-12 rounded-2xl border border-dashed border-slate-200 bg-white">
-                        <p className="text-slate-500 font-medium">Управление дочерними услугами</p>
-                        <p className="text-slate-400 text-sm mt-1">Будет доступно сразу после успешного сохранения первого направления верхнего уровня.</p>
+                    <div className="space-y-6">
+                        <div className="border-b border-slate-200 pb-4">
+                            <h2 className="text-2xl font-bold tracking-tight">Создание среднего уровня: Конечные услуги</h2>
+                            <p className="text-sm text-slate-500 mt-1">Привязка конкретных коммерческих продуктов к направлениям верхнего уровня.</p>
+                        </div>
+
+                        <form onSubmit={handleCreateService} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+                            <div className="grid gap-6 md:grid-cols-2">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Родительское направление</label>
+                                    <select required value={serviceForm.categoryId} onChange={(e) => setServiceForm(prev => ({ ...prev, categoryId: e.target.value }))} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:border-blue-500 bg-white transition">
+                                        <option value="">-- Выберите направление --</option>
+                                        {categories?.map((cat) => (
+                                            <option key={cat.id} value={cat.id}>{cat.title}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Название услуги</label>
+                                    <input type="text" required value={serviceForm.title} onChange={(e) => setServiceForm(prev => ({ ...prev, title: e.target.value }))} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition" placeholder="Разработка PWA под ключ" />
+                                </div>
+                            </div>
+
+                            <div className="grid gap-6 md:grid-cols-2">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">ЧПУ Ссылка (Slug услуги)</label>
+                                    <input type="text" required value={serviceForm.slug} onChange={(e) => setServiceForm(prev => ({ ...prev, slug: e.target.value }))} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition" placeholder="pwa-development" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Стоимость от (₽)</label>
+                                    <input type="number" required value={serviceForm.priceFrom} onChange={(e) => setServiceForm(prev => ({ ...prev, priceFrom: Number(e.target.value) }))} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition" placeholder="49000" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Краткое SEO Описание (Для карточки на главной)</label>
+                                <input type="text" required value={serviceForm.seoDescription} onChange={(e) => setServiceForm(prev => ({ ...prev, seoDescription: e.target.value }))} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition" placeholder="Прогрессивные веб-приложения с мгновенной установкой на экраны iPhone и Android без App Store." />
+                            </div>
+
+                            <button type="submit" disabled={createService.isPending} className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition disabled:opacity-50">
+                                {createService.isPending ? "Связываю таблицы..." : "Опубликовать коммерческую услугу"}
+                            </button>
+                        </form>
                     </div>
                 )}
+
             </main>
         </div>
     );
