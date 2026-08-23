@@ -2,7 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
 export const marketingRouter = createTRPCRouter({
-    // 1. Получить все направления
+    // 1. Получить все направления (Категории) со всеми привязанными услугами
     getCategories: publicProcedure.query(async ({ ctx }) => {
         return await ctx.db.category.findMany({
             include: {
@@ -12,7 +12,7 @@ export const marketingRouter = createTRPCRouter({
         });
     }),
 
-    // 🔥 2. МЕТОД ЗАПИСИ НАПРАВЛЕНИЯ ИЗ АДМИНКИ В БАЗУ ДАННЫХ
+    // 2. Метод записи Направления из админки в PostgreSQL
     createCategory: publicProcedure
         .input(
             z.object({
@@ -43,10 +43,35 @@ export const marketingRouter = createTRPCRouter({
             });
         }),
 
+    // 🔥 3. ТОТ САМЫЙ МЕТОД: ЗАПИСЬ КОНЕЧНОЙ УСЛУГИ С ПРИВЯЗКОЙ К НАПРАВЛЕНИЮ
+    createService: publicProcedure
+        .input(
+            z.object({
+                title: z.string().min(2),
+                slug: z.string().min(2),
+                categoryId: z.string().min(2),
+                priceFrom: z.number().min(0),
+                seoDescription: z.string().min(2),
+            })
+        )
+        .mutation(async ({ ctx, input }) => {
+            return await ctx.db.service.create({
+                data: {
+                    title: input.title,
+                    slug: input.slug.toLowerCase().trim(),
+                    categoryId: input.categoryId,
+                    priceFrom: input.priceFrom,
+                    seoDescription: input.seoDescription,
+                },
+            });
+        }),
+
+    // Старая заглушка постов блога, чтобы не падала главная страница
     getPosts: publicProcedure.query(() => {
         return [];
     }),
 
+    // Обработка заявок с главной страницы
     createLead: publicProcedure
         .input(
             z.object({
