@@ -22,8 +22,7 @@ export const authConfig = {
   providers: [
     GitHubProvider({
       clientId: env.GITHUB_CLIENT_ID,
-      clientSecret: env.GITHUB_CLIENT_SECRET,
-      checks: ["none"], // 👈 ВСТАВЬ ЭТУ СТРОЧКУ СЮДА! Это отключит проверку бага "iss"
+      clientSecret: env.GITHUB_CLIENT_SECRET
     })
   ],
   secret: process.env.AUTH_SECRET, // Обязательный секрет для шифрования куки локально
