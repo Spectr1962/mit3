@@ -40,6 +40,8 @@ export const authConfig = {
     signIn({ user }) {
       const adminEmail = "larionov.igor1987@yandex.ru"; // Твой точный логин на GitHub
 
+      console.log("🕵️‍♂️ ДАННЫЕ ИЗ ГИТХАБА ПРИШЛИ:", JSON.stringify(user));
+
       if (user.email === adminEmail) {
         return true; // Пропускаем в админку только тебя
       }
