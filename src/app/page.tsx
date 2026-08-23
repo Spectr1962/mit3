@@ -43,7 +43,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-blue-500 selection:text-white">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900" suppressHydrationWarning>
       {/* Шапка сайта */}
       <header className="mx-auto max-w-7xl px-6 py-6 flex items-center justify-between border-b border-slate-200/60 bg-white/80 backdrop-blur-md sticky top-0 z-50 rounded-b-2xl shadow-sm">
         <span className="text-xl font-black tracking-tight text-blue-600">⚡ MIT3.RU</span>
@@ -89,8 +89,8 @@ export default function HomePage() {
                           type="button"
                           onClick={() => setForm((prev) => ({ ...prev, serviceId: service.id }))}
                           className={`group flex flex-col text-left bg-white rounded-2xl p-6 shadow-sm border transition-all duration-300 ${form.serviceId === service.id
-                              ? "border-blue-500 ring-2 ring-blue-500/20 shadow-md"
-                              : "border-slate-200/80 hover:border-slate-300 hover:shadow-md"
+                            ? "border-blue-500 ring-2 ring-blue-500/20 shadow-md"
+                            : "border-slate-200/80 hover:border-slate-300 hover:shadow-md"
                             }`}
                         >
                           <div className="flex items-start justify-between w-full gap-4">
