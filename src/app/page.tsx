@@ -111,27 +111,34 @@ export default function Home() {
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2">
-          {services?.map((category: Category & { services: Service[] }) => (
-            <div key={category.id} className="mb-12">
-              <h2 className="text-2xl font-bold text-slate-800 mb-6">{category.title}</h2>
+          {/* СТАЛО (добавляем жесткую защиту через логическое ИЛИ на пустой массив): */}
+          {services && services.length > 0 ? (
+            services.map((category: any) => (
+              <div key={category.id} className="mb-12">
+                <h2 className="text-2xl font-bold text-slate-800 mb-6">{category.title}</h2>
 
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {category.services?.map((service: Service) => (
-                  <div key={service.id} className="group flex flex-col bg-white rounded-2xl p-6 shadow-sm border border-slate-200/60 hover:border-blue-500 transition-all">
-                    <div className="flex items-start justify-between">
-                      <h3 className="text-xl font-bold group-hover:text-blue-600 transition-colors">{service.title}</h3>
-                      <span className="text-sm font-semibold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg">{service.priceFrom} ₽</span>
-                    </div>
-                    <p className="mt-3 text-slate-600 text-sm leading-relaxed flex-grow">{service.seoDescription ?? ""}</p>
-
-                    <div className="mt-4 text-xs font-medium text-slate-400">
-                      {form.serviceId === service.id ? "✓ Услуга выбрана" : "+ Выбрать для расчета стоимости"}
-                    </div>
-                  </div>
-                ))}
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {category.services && category.services.length > 0 ? (
+                    category.services.map((service: any) => (
+                      <div key={service.id} className="group flex flex-col bg-white rounded-2xl p-6 shadow-sm border border-slate-200/60 hover:border-blue-500 transition-all">
+                        <div className="flex items-start justify-between">
+                          <h3 className="text-xl font-bold group-hover:text-blue-600 transition-colors">{service.title}</h3>
+                          <span className="text-sm font-semibold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg">{service.priceFrom} ₽</span>
+                        </div>
+                        <p className="mt-3 text-slate-600 text-sm leading-relaxed flex-grow">{service.seoDescription ?? ""}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-slate-400">В этом направлении пока нет услуг.</p>
+                  )}
+                </div>
               </div>
+            ))
+          ) : (
+            <div className="text-center py-12 rounded-2xl border border-dashed border-slate-200 bg-slate-50/50">
+              <p className="text-slate-500 font-medium">Каталог услуг пуст. Зайдите в админку, чтобы создать первое направление контента!</p>
             </div>
-          ))}
+          )}
         </div>
       </section>
 
