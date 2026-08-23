@@ -359,7 +359,7 @@ export default function AdminPage() {
                         <div className="space-y-4">
                             <h3 className="text-lg font-bold tracking-tight text-slate-800">Все активные услуги по направлениям</h3>
                             <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-                                {categories && categories.some((cat: Category & { services?: Service[] }) => (cat.services?.length ?? 0) > 0) ? (
+                                {categories?.some((cat: Category & { services?: Service[] }) => (cat.services?.length ?? 0) > 0) ? (
                                     <table className="w-full text-left border-collapse text-sm">
                                         <thead>
                                             <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold text-xs uppercase tracking-wider">
