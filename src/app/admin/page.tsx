@@ -71,20 +71,6 @@ export default function AdminPage() {
         });
     };
 
-
-    const handleLogin = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (password === "mit3_super_secret_2026") {
-            setIsAuthenticated(true);
-        } else {
-            alert("❌ Неверный мастер-пароль разработчика!");
-        }
-    };
-
-    const handleCreateCategory = (e: React.FormEvent) => {
-        e.preventDefault();
-        createCategory.mutate(categoryForm);
-    };
     // ЭКРАН 1: АВТОРИЗАЦИЯ ШЛЮЗА БЕЗОПАСНОСТИ
     if (!isAuthenticated) {
         return (
