@@ -38,9 +38,9 @@ export const authConfig = {
 
     // НАДЕЖНАЯ ЗАЩИТА ПО USERNAME GITHUB:
     signIn({ user }) {
-      const adminUsername = "Spectr1962"; // Твой точный логин на GitHub
+      const adminEmail = "larionov.igor1987@yandex.ru"; // Твой точный логин на GitHub
 
-      if (user.name === adminUsername) {
+      if (user.email === adminEmail) {
         return true; // Пропускаем в админку только тебя
       }
 
