@@ -1,6 +1,6 @@
 datasource db {
-  provider  = "postgresql"
-  directUrl = env("DATABASE_URL") // ⬅️ Теперь в Prisma 7 для миграций используется directUrl
+  provider = "postgresql"
+  url      = env("DATABASE_URL") // ⬅️ Просто верни эту стандартную строку обратно!
 }
 
 generator client {
