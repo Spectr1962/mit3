@@ -1,16 +1,20 @@
-import { env } from "~/env";
-import { PrismaClient } from "@prisma/client";
-
-const createPrismaClient = () =>
-  new PrismaClient({
-    log:
-      env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
-  });
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { PrismaClient } from '@prisma/client';
 
 const globalForPrisma = globalThis as unknown as {
-  prisma: ReturnType<typeof createPrismaClient> | undefined;
+  prisma: PrismaClient | undefined;
 };
 
-export const db = globalForPrisma.prisma ?? createPrismaClient();
+// Создаем пул подключений через стандартный пакет 'pg'
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
 
-if (env.NODE_ENV !== "production") globalForPrisma.prisma = db;
+export const db =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    adapter, // ⬅️ ПЕРЕДАЕМ АДАПТЕР СЮДА, СТРОГО ПО ТРЕБОВАНИЮ PRISMA V7
+    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+  });
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db;
