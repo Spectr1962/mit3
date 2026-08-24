@@ -1,6 +1,6 @@
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL") // ⬅️ Возвращаем стандартный классический вариант
+  provider  = "postgresql"
+  directUrl = env("DATABASE_URL") // ⬅️ Единственный валидный параметр в v7 для прямой работы с БД
 }
 
 generator client {
