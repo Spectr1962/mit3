@@ -14,6 +14,10 @@ RUN npm ci
 # === ЭТАП 2: Сборка приложения ===
 FROM node:20-alpine AS builder
 WORKDIR /app
+# 👇 ДОБАВЬ ЭТУ СТРОКУ СРАЗУ ПОСЛЕ WORKDIR 👇
+ARG DATABASE_URL
+ENV DATABASE_URL=$DATABASE_URL
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 

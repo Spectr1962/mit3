@@ -1,7 +1,6 @@
 datasource db {
-  provider  = "postgresql"
-  url       = ""                     // ⬅️ Оставляем пустую строку-заглушку, чтобы прошел npx prisma generate
-  directUrl = env("DATABASE_URL")   // ⬅️ Передаем реальный адрес базы данных для миграций и работы
+  provider = "postgresql"
+  url      = env("DATABASE_URL") // ⬅️ Возвращаем стандартный классический вариант
 }
 
 generator client {
