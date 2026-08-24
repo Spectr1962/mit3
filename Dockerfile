@@ -52,5 +52,6 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Перед запуском сервера подтягиваем миграции базы данных
-CMD ["npx", "prisma", "db", "push", "&&", "node", "server.js"]
+# Запускаем миграции/синхронизацию БД, и только при успехе — стартуем сервер Next.js
+CMD npx prisma db push && node server.js
+
