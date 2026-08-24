@@ -1,38 +1,33 @@
-# === ЭТАП 1: Установка зависимостей ===
+##### ЭТАП 1: Установка зависимостей #####
 FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Копируем файлы манифеста пакетов
-COPY package.json package-lock.json ./
-# Если у тебя есть папка prisma со схемой, она нужна для генерации Prisma Client
-COPY prisma ./prisma
+# Копируем только файлы манифестов для кэширования слоев Docker
+COPY package.json package-lock.json* ./
+COPY prisma ./prisma/
 
-# Устанавливаем все зависимости
+# Чистая установка всех зависимостей (включая devDependencies для сборки)
 RUN npm ci
 
-# === ЭТАП 2: Сборка приложения ===
+##### ЭТАП 2: Генерация Prisma и сборка приложения #####
 FROM node:20-alpine AS builder
 WORKDIR /app
-# 👇 ДОБАВЬ ЭТУ СТРОКУ СРАЗУ ПОСЛЕ WORKDIR 👇
-ARG DATABASE_URL
-ENV DATABASE_URL=$DATABASE_URL
 
+# Переносим установленные node_modules и файлы из предыдущего шага
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Отключаем телеметрию Next.js во время сборки
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# 👇 ВОТ ЭТА СТРОКА ОДНИМ МАХОМ УБЕРЕТ ВСЕ ОШИБКИ ИЗ ТВОЕГО ЛОГА 👇
-ENV SKIP_ENV_VALIDATION=true
-
-# Генерируем Prisma Client и собираем Next.js проект
+# ПРИНУДИТЕЛЬНАЯ ГЕНЕРАЦИЯ КЛИЕНТА (Решает вашу ошибку)
 RUN npx prisma generate
+
+# Сборка Next.js приложения
 RUN npm run build
 
-
-# === ЭТАП 3: Запуск готового приложения ===
+##### ЭТАП 3: Финальный продакшн-образ #####
 FROM node:20-alpine AS runner
 WORKDIR /app
 
@@ -43,11 +38,16 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Копируем только необходимые для работы файлы (без исходного кода)
+# Копируем собранный проект и необходимые файлы
 COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/prisma ./prisma
+
+# Копируем собранный Next.js (standalone режим оптимизирует размер)
+# Если у вас в next.config.js не настроен output: 'standalone', 
+# то эти строки скопируют стандартную сборку:
+COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 
 USER nextjs
 
@@ -56,5 +56,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Запускаем миграции/синхронизацию БД, и только при успехе — стартуем сервер Next.js
-CMD npx prisma generate && node server.js
+CMD ["npm", "start"]
