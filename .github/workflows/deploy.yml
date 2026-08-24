@@ -5,14 +5,44 @@ on:
     branches:
       - main
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+# Даем пайплайну права на запись в реестр пакетов GitHub (GHCR)
+permissions:
+  contents: read
+  packages: write
 
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository Code
         uses: actions/checkout@v4
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Авторизуемся в бесплатном реестре контейнеров GitHub
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }} # Этот токен GitHub генерирует сам, ничего настраивать не нужно
+
+      # Собираем Docker-образ в облаке GitHub и публикуем его
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          # Имя образа будет в нижнем регистре: ghcr.io/твой-логин/mit3:latest
+          tags: ghcr.io/${{ github.repository_owner }}/mit3:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push # Деплой начнется ТОЛЬКО после успешной сборки образов
+    steps:
       - name: Execute Remote SSH Commands on Production Server
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -21,10 +51,22 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            cd ~/app
-            git reset --hard origin/main
-            git pull origin main
-            npm install
-            npx prisma generate
-            npm run build
-            pm2 restart mit3-site
+            # Авторизуем сервер в GitHub Packages (используем твой токен/секрет, если репозиторий приватный, для публичного можно без)
+            # Скачиваем свежий готовый образ
+            docker pull ghcr.io/${{ github.repository_owner }}/mit3:latest
+            
+            # Останавливаем старый контейнер, если он запущен
+            docker stop mit3-app || true
+            docker rm mit3-app || true
+            
+            # Запускаем приложение из нового Docker-образа
+            # Передаем строку подключения к БД (замени DATABASE_URL на твою переменную, если нужно)
+            docker run -d \
+              --name mit3-app \
+              -p 3000:3000 \
+              --restart unless-stopped \
+              -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+              ghcr.io/${{ github.repository_owner }}/mit3:latest
+            
+            # Очищаем старые ненужные образы, чтобы не забивать диск сервера
+            docker image prune -f

@@ -9,6 +9,7 @@ const withPWA = withPWAInit({
 /** @type {import("next").NextConfig} */
 const config = {
     reactStrictMode: true,
+    output: "standalone", // <--- ОБЯЗАТЕЛЬНО ДОБАВЬ ЭТУ СТРОКУ ДЛЯ DEVOPS/DOCKER
 };
 
 export default withPWA(config);
