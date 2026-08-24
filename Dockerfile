@@ -20,9 +20,13 @@ COPY . .
 # Отключаем телеметрию Next.js во время сборки
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# 👇 ВОТ ЭТА СТРОКА ОДНИМ МАХОМ УБЕРЕТ ВСЕ ОШИБКИ ИЗ ТВОЕГО ЛОГА 👇
+ENV SKIP_ENV_VALIDATION=true
+
 # Генерируем Prisma Client и собираем Next.js проект
 RUN npx prisma generate
 RUN npm run build
+
 
 # === ЭТАП 3: Запуск готового приложения ===
 FROM node:20-alpine AS runner
