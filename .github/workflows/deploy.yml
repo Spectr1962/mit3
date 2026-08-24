@@ -36,6 +36,10 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             DATABASE_URL=postgresql://postgres:pass@localhost:5432/db
+            AUTH_SECRET=placeholder_value_for_build_only
+            GITHUB_CLIENT_ID=placeholder_value_for_build_only
+            GITHUB_CLIENT_SECRET=placeholder_value_for_build_only
+            NEXTAUTH_URL=http://localhost:3000
 
   deploy:
     runs-on: ubuntu-latest

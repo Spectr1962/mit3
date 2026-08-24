@@ -18,10 +18,22 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Отключаем телеметрию Next.js во время сборки
+# Объявляем аргументы сборки для валидатора t3-env
+ARG DATABASE_URL
+ARG AUTH_SECRET
+ARG GITHUB_CLIENT_ID
+ARG GITHUB_CLIENT_SECRET
+ARG NEXTAUTH_URL
+
+# Переводим аргументы в переменные окружения для процесса npm run build
+ENV DATABASE_URL=$DATABASE_URL
+ENV AUTH_SECRET=$AUTH_SECRET
+ENV GITHUB_CLIENT_ID=$GITHUB_CLIENT_ID
+ENV GITHUB_CLIENT_SECRET=$GITHUB_CLIENT_SECRET
+ENV NEXTAUTH_URL=$NEXTAUTH_URL
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# ПРИНУДИТЕЛЬНАЯ ГЕНЕРАЦИЯ КЛИЕНТА (Решает вашу ошибку)
+# ПРИНУДИТЕЛЬНАЯ ГЕНЕРАЦИЯ КЛИЕНТА
 RUN npx prisma generate
 
 # Сборка Next.js приложения
