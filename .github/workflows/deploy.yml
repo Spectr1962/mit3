@@ -69,4 +69,7 @@ jobs:
               -e NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL }}" \
               ghcr.io/spectr1962/mit3:latest
 
+            # Автоматическая синхронизация схемы базы данных при каждом деплое
+            docker exec -e DATABASE_URL="${{ secrets.DATABASE_URL }}" mit3-app npx prisma db push
+
             docker image prune -f
