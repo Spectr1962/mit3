@@ -53,5 +53,4 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 # Запускаем миграции/синхронизацию БД, и только при успехе — стартуем сервер Next.js
-CMD npx prisma db push && node server.js
-
+CMD npx prisma generate && node server.js
