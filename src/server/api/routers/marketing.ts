@@ -42,6 +42,9 @@ export const marketingRouter = createTRPCRouter({
                 .replace(/[\s_]+/g, "-");
 
             return await ctx.db.service.create({
+                import { Prisma } from "@prisma/client"; // Убедитесь, что этот импорт есть вверху файла
+
+                // ... внутри мутации createService в блоке data:
                 data: {
                     slug: generatedSlug,
                     name: input.name,
@@ -51,10 +54,10 @@ export const marketingRouter = createTRPCRouter({
                     metaTitle: input.metaTitle,
                     metaDesc: input.metaDesc,
                     keywords: "",
-                    // БЕЗОПАСНОСТЬ: Объясняем линтеру, что парсим данные в массив неопределенных объектов для Prisma JSON
-                    features: input.features ? (JSON.parse(input.features) as unknown[]) : [],
-                    tariffs: input.tariffs ? (JSON.parse(input.tariffs) as unknown[]) : [],
-                    faq: input.faq ? (JSON.parse(input.faq) as unknown[]) : [],
+                    // БЕЗОПАСНОСТЬ И ТИПЫ: Приводим к InputJsonValue, чтобы Prisma приняла данные без ошибок
+                    features: input.features ? (JSON.parse(input.features) as Prisma.InputJsonValue) : [],
+                    tariffs: input.tariffs ? (JSON.parse(input.tariffs) as Prisma.InputJsonValue) : [],
+                    faq: input.faq ? (JSON.parse(input.faq) as Prisma.InputJsonValue) : [],
                     sectorId: input.sectorId,
                 },
             });

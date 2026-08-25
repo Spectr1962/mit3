@@ -42,6 +42,9 @@ export const postRouter = createTRPCRouter({
                 .replace(/[\s_]+/g, "-");
 
             return await ctx.db.service.create({
+                import { Prisma } from "@prisma/client"; // Добавьте импорт наверх файла
+
+                // ... внутри мутации createService в блоке data:
                 data: {
                     slug: generatedSlug,
                     name: input.name,
@@ -51,10 +54,10 @@ export const postRouter = createTRPCRouter({
                     metaTitle: input.metaTitle,
                     metaDesc: input.metaDesc ?? input.metaDescription ?? "",
                     keywords: "",
-                    // БЕЗОПАСНОСТЬ: Явное приведение типов для устранения варнингов no-unsafe-assignment
-                    features: input.features ? (JSON.parse(input.features) as unknown[]) : [],
-                    tariffs: input.tariffs ? (JSON.parse(input.tariffs) as unknown[]) : [],
-                    faq: input.faq ? (JSON.parse(input.faq) as unknown[]) : [],
+                    // БЕЗОПАСНОСТЬ И ТИПЫ: Прописываем нативный InputJsonValue
+                    features: input.features ? (JSON.parse(input.features) as Prisma.InputJsonValue) : [],
+                    tariffs: input.tariffs ? (JSON.parse(input.tariffs) as Prisma.InputJsonValue) : [],
+                    faq: input.faq ? (JSON.parse(input.faq) as Prisma.InputJsonValue) : [],
                     sectorId: input.sectorId,
                 },
             });
