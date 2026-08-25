@@ -16,7 +16,7 @@ export const postRouter = createTRPCRouter({
         });
     }),
 
-    // 2. Процедура создания новой коммерческой услуги из админки
+    // 2. Процедура создания новой коммерческой услуги из вашей админки
     createService: publicProcedure
         .input(
             z.object({
@@ -26,7 +26,7 @@ export const postRouter = createTRPCRouter({
                 description: z.string(),
                 priceFrom: z.number().positive(),
                 metaTitle: z.string(),
-                metaDescription: z.string().optional(), // Делаем опциональным, если передается metaDesc
+                metaDescription: z.string().optional(),
                 metaDesc: z.string().optional(),
                 features: z.string(),
                 tariffs: z.string(),
@@ -34,17 +34,25 @@ export const postRouter = createTRPCRouter({
             }),
         )
         .mutation(async ({ ctx, input }) => {
+            // Автоматическая SEO-генерация ЧПУ слага из имени услуги
+            const generatedSlug = input.name
+                .toLowerCase()
+                .trim()
+                .replace(/[^\w\s-]/g, "")
+                .replace(/[\s_]+/g, "-");
+
             return await ctx.db.service.create({
                 data: {
+                    // ИСПРАВЛЕНИЕ: Добавляем обязательное для Prisma поле slug
+                    slug: generatedSlug,
+
                     name: input.name,
                     titleH1: input.titleH1,
                     description: input.description,
                     priceFrom: input.priceFrom,
                     metaTitle: input.metaTitle,
-                    // Безопасно сопоставляем альтернативные имена полей
                     metaDesc: input.metaDesc ?? input.metaDescription ?? "",
                     keywords: "",
-                    // Парсим строки в JSON, так как в Prisma эти поля имеют тип Json
                     features: input.features ? JSON.parse(input.features) : [],
                     tariffs: input.tariffs ? JSON.parse(input.tariffs) : [],
                     faq: input.faq ? JSON.parse(input.faq) : [],
@@ -52,6 +60,7 @@ export const postRouter = createTRPCRouter({
                 },
             });
         }),
+
 
     // 3. Получение услуг конкретного сектора (для вывода в каталоге)
     getServicesBySector: publicProcedure
