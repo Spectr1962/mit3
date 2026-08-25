@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { Prisma } from "@prisma/client";
 
 export const postRouter = createTRPCRouter({
     // 1. Процедура получения всех секторов (направлений) для выпадающего списка
@@ -9,14 +10,14 @@ export const postRouter = createTRPCRouter({
         });
     }),
 
-    // Дополнительный алиас для обратной совместимости, если в коде админки вызывается getCategories
+    // Дополнительный алиас для обратной совместимости с фронтендом админки
     getCategories: publicProcedure.query(async ({ ctx }) => {
         return await ctx.db.serviceSector.findMany({
             orderBy: { priority: "desc" },
         });
     }),
 
-    // 2. Процедура создания новой коммерческой услуги из вашей админки
+    // 2. Процедура создания новой коммерческой услуги из админки
     createService: publicProcedure
         .input(
             z.object({
@@ -42,9 +43,6 @@ export const postRouter = createTRPCRouter({
                 .replace(/[\s_]+/g, "-");
 
             return await ctx.db.service.create({
-                import { Prisma } from "@prisma/client"; // Добавьте импорт наверх файла
-
-                // ... внутри мутации createService в блоке data:
                 data: {
                     slug: generatedSlug,
                     name: input.name,
@@ -52,9 +50,10 @@ export const postRouter = createTRPCRouter({
                     description: input.description,
                     priceFrom: input.priceFrom,
                     metaTitle: input.metaTitle,
+                    // Безопасно сопоставляем альтернативные имена полей для предотвращения варнингов
                     metaDesc: input.metaDesc ?? input.metaDescription ?? "",
                     keywords: "",
-                    // БЕЗОПАСНОСТЬ И ТИПЫ: Прописываем нативный InputJsonValue
+                    // Строгая типизация к стандартам Prisma v7
                     features: input.features ? (JSON.parse(input.features) as Prisma.InputJsonValue) : [],
                     tariffs: input.tariffs ? (JSON.parse(input.tariffs) as Prisma.InputJsonValue) : [],
                     faq: input.faq ? (JSON.parse(input.faq) as Prisma.InputJsonValue) : [],
@@ -63,8 +62,7 @@ export const postRouter = createTRPCRouter({
             });
         }),
 
-
-    // 3. Получение услуг конкретного сектора (для вывода в каталоге)
+    // 3. Получение услуг конкретного сектора
     getServicesBySector: publicProcedure
         .input(z.object({ sectorId: z.string() }))
         .query(async ({ ctx, input }) => {

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { Prisma } from "@prisma/client";
 
 export const marketingRouter = createTRPCRouter({
     // 1. Процедура, которую вызывает админка для выпадающего списка секторов
@@ -9,7 +10,7 @@ export const marketingRouter = createTRPCRouter({
         });
     }),
 
-    // Оставляем для совместимости старое название, если оно где-то используется
+    // Оставляем для совместимости старое название, если оно где-то используется в проекте
     getCategories: publicProcedure.query(async ({ ctx }) => {
         return await ctx.db.serviceSector.findMany({
             orderBy: { priority: "desc" },
@@ -33,8 +34,7 @@ export const marketingRouter = createTRPCRouter({
             }),
         )
         .mutation(async ({ ctx, input }) => {
-            // SEO-генерация слага: переводим название в нижний регистр, заменяем пробелы на дефисы
-            // и очищаем от спецсимволов. Для полноценного транслита кириллицы можно использовать библиотеку или оставить так для латиницы.
+            // Автоматическая SEO-генерация ЧПУ слага из имени услуги
             const generatedSlug = input.name
                 .toLowerCase()
                 .trim()
@@ -42,9 +42,6 @@ export const marketingRouter = createTRPCRouter({
                 .replace(/[\s_]+/g, "-");
 
             return await ctx.db.service.create({
-                import { Prisma } from "@prisma/client"; // Убедитесь, что этот импорт есть вверху файла
-
-                // ... внутри мутации createService в блоке data:
                 data: {
                     slug: generatedSlug,
                     name: input.name,
@@ -54,7 +51,7 @@ export const marketingRouter = createTRPCRouter({
                     metaTitle: input.metaTitle,
                     metaDesc: input.metaDesc,
                     keywords: "",
-                    // БЕЗОПАСНОСТЬ И ТИПЫ: Приводим к InputJsonValue, чтобы Prisma приняла данные без ошибок
+                    // Безопасное приведение к InputJsonValue под новые стандарты строгого линтинга в Docker
                     features: input.features ? (JSON.parse(input.features) as Prisma.InputJsonValue) : [],
                     tariffs: input.tariffs ? (JSON.parse(input.tariffs) as Prisma.InputJsonValue) : [],
                     faq: input.faq ? (JSON.parse(input.faq) as Prisma.InputJsonValue) : [],
@@ -63,7 +60,7 @@ export const marketingRouter = createTRPCRouter({
             });
         }),
 
-    // 3. Дополнительные процедуры для получения услуг (чтобы админка не ругалась при инвалидации)
+    // 3. Получение услуг конкретного сектора (для вывода в каталоге)
     getServicesBySector: publicProcedure
         .input(z.object({ sectorId: z.string() }))
         .query(async ({ ctx, input }) => {
@@ -73,6 +70,7 @@ export const marketingRouter = createTRPCRouter({
             });
         }),
 
+    // Алиас для обратной совместимости с фронтендом, если вызывается getServicesByCategory
     getServicesByCategory: publicProcedure
         .input(z.object({ categoryId: z.string() }))
         .query(async ({ ctx, input }) => {
