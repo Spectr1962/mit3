@@ -1,34 +1,53 @@
+export const dynamic = "force-dynamic";
+
 import { db } from "~/server/db";
 import { type TariffItem } from "~/types/services";
 
 export default async function DevelopmentServicePage() {
-    // 1. Делаем безопасный запрос к базе
-    const service = await db.service.findUnique({
-        where: { slug: "pwa-digital-hub" },
-        select: {
-            titleH1: true,
-            description: true,
-            tariffs: true, // В базе это тип Json
+    let service = null;
+    let safeTariffs: TariffItem[] = [];
+
+    try {
+        // 1. Делаем безопасный запрос к базе данных
+        service = await db.service.findUnique({
+            where: { slug: "pwa-digital-hub" },
+            select: {
+                titleH1: true,
+                description: true,
+                tariffs: true, // В базе это тип Json
+            }
+        });
+
+        if (service && service.tariffs) {
+            // 2. Безопасное приведение типов (Линтер скажет спасибо!)
+            safeTariffs = service.tariffs as unknown as TariffItem[];
         }
-    });
+    } catch (error) {
+        console.error("База данных недоступна при сборке страницы Development:", error);
+    }
 
-    if (!service) return <div>Услуга не найдена</div>;
-
-    // 2. БЕЗОПАСНОЕ ПРИВЕДЕНИЕ ТИПОВ (Линтер скажет спасибо!)
-    const safeTariffs = service.tariffs as unknown as TariffItem[];
+    // Если база недоступна (например, в Docker при сборке), выводим красивую заглушку, чтобы билд не падал
+    if (!service) {
+        return (
+            <main className="container mx-auto p-8 text-center">
+                <h1 className="text-3xl font-bold">Разработка цифровых PWA-хабов</h1>
+                <p className="text-muted-foreground mt-2">Страница находится в процессе синхронизации с базой данных.</p>
+            </main>
+        );
+    }
 
     return (
         <main className="container mx-auto p-8">
-            <h1>{service.titleH1}</h1>
-            <p>{service.description}</p>
+            <h1 className="text-4xl font-black mb-4">{service.titleH1}</h1>
+            <p className="text-xl text-muted-foreground leading-relaxed">{service.description}</p>
 
-            {/* Теперь мы можем абсолютно безопасно вызывать .map, типы строго определены */}
-            <div className="grid grid-cols-2 gap-4 mt-8">
+            {/* Вывод тарифов */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
                 {safeTariffs.map((tariff, index) => (
-                    <div key={index} className="border p-4 rounded-xl">
+                    <div key={index} className="border p-6 rounded-2xl bg-card shadow-sm">
                         <h3 className="font-bold text-xl">{tariff.name}</h3>
-                        <p className="text-lg font-semibold text-sky-600">{tariff.price} руб.</p>
-                        <ul className="mt-2 text-sm text-muted-foreground">
+                        <p className="text-lg font-semibold text-sky-600 mt-1">{tariff.price} руб.</p>
+                        <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
                             {tariff.features.map((f, i) => <li key={i}>• {f}</li>)}
                         </ul>
                     </div>
