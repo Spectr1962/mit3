@@ -33,8 +33,19 @@ export const marketingRouter = createTRPCRouter({
             }),
         )
         .mutation(async ({ ctx, input }) => {
+            // SEO-генерация слага: переводим название в нижний регистр, заменяем пробелы на дефисы
+            // и очищаем от спецсимволов. Для полноценного транслита кириллицы можно использовать библиотеку или оставить так для латиницы.
+            const generatedSlug = input.name
+                .toLowerCase()
+                .trim()
+                .replace(/[^\w\s-]/g, "")
+                .replace(/[\s_]+/g, "-");
+
             return await ctx.db.service.create({
                 data: {
+                    // ДОБАВЛЯЕМ ОБЯЗАТЕЛЬНОЕ ПОЛЕ СЛАГА ДЛЯ PRISMA И SEO ЧПУ:
+                    slug: generatedSlug,
+
                     name: input.name,
                     titleH1: input.titleH1,
                     description: input.description,
@@ -42,7 +53,6 @@ export const marketingRouter = createTRPCRouter({
                     metaTitle: input.metaTitle,
                     metaDesc: input.metaDesc,
                     keywords: "",
-                    // Безопасно парсим входящие строки в Json для новой схемы Prisma
                     features: input.features ? JSON.parse(input.features) : [],
                     tariffs: input.tariffs ? JSON.parse(input.tariffs) : [],
                     faq: input.faq ? JSON.parse(input.faq) : [],
