@@ -43,9 +43,7 @@ export const marketingRouter = createTRPCRouter({
 
             return await ctx.db.service.create({
                 data: {
-                    // ДОБАВЛЯЕМ ОБЯЗАТЕЛЬНОЕ ПОЛЕ СЛАГА ДЛЯ PRISMA И SEO ЧПУ:
                     slug: generatedSlug,
-
                     name: input.name,
                     titleH1: input.titleH1,
                     description: input.description,
@@ -53,9 +51,10 @@ export const marketingRouter = createTRPCRouter({
                     metaTitle: input.metaTitle,
                     metaDesc: input.metaDesc,
                     keywords: "",
-                    features: input.features ? JSON.parse(input.features) : [],
-                    tariffs: input.tariffs ? JSON.parse(input.tariffs) : [],
-                    faq: input.faq ? JSON.parse(input.faq) : [],
+                    // БЕЗОПАСНОСТЬ: Объясняем линтеру, что парсим данные в массив неопределенных объектов для Prisma JSON
+                    features: input.features ? (JSON.parse(input.features) as unknown[]) : [],
+                    tariffs: input.tariffs ? (JSON.parse(input.tariffs) as unknown[]) : [],
+                    faq: input.faq ? (JSON.parse(input.faq) as unknown[]) : [],
                     sectorId: input.sectorId,
                 },
             });

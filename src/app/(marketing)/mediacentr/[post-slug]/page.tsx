@@ -1,14 +1,13 @@
-// Используем базовый интерфейс Next.js для новых версий, чтобы обойти жесткий линтинг
 interface PageProps {
-    params: Promise<any>;
+    params: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export default async function BlogPostPage({ params }: PageProps) {
-    // Асинхронно разворачиваем параметры, как требует ваша версия Next.js
+    // Асинхронно разворачиваем параметры URL (требование свежих версий Next.js)
     const resolvedParams = await params;
 
-    // Достаем наш слаг по имени папки [post-slug]
-    const slug = resolvedParams["post-slug"] as string;
+    // Безопасно достаем слаг и приводим его к строке
+    const slug = (resolvedParams["post-slug"] as string) ?? "";
 
     return (
         <main className="container mx-auto px-4 py-16">

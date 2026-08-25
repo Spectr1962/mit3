@@ -43,9 +43,7 @@ export const postRouter = createTRPCRouter({
 
             return await ctx.db.service.create({
                 data: {
-                    // ИСПРАВЛЕНИЕ: Добавляем обязательное для Prisma поле slug
                     slug: generatedSlug,
-
                     name: input.name,
                     titleH1: input.titleH1,
                     description: input.description,
@@ -53,9 +51,10 @@ export const postRouter = createTRPCRouter({
                     metaTitle: input.metaTitle,
                     metaDesc: input.metaDesc ?? input.metaDescription ?? "",
                     keywords: "",
-                    features: input.features ? JSON.parse(input.features) : [],
-                    tariffs: input.tariffs ? JSON.parse(input.tariffs) : [],
-                    faq: input.faq ? JSON.parse(input.faq) : [],
+                    // БЕЗОПАСНОСТЬ: Явное приведение типов для устранения варнингов no-unsafe-assignment
+                    features: input.features ? (JSON.parse(input.features) as unknown[]) : [],
+                    tariffs: input.tariffs ? (JSON.parse(input.tariffs) as unknown[]) : [],
+                    faq: input.faq ? (JSON.parse(input.faq) as unknown[]) : [],
                     sectorId: input.sectorId,
                 },
             });
