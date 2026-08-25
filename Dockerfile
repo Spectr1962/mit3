@@ -1,79 +1,71 @@
-##### ЭТАП 1: Установка зависимостей #####
+##### ЭТАП 1: Инициализация окружения и скачивание npm-пакетов #####
 FROM node:20-alpine AS deps
+# Установка libc6-compat обязательна для бинарников Prisma в Alpine Linux
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Копируем только файлы манифестов для кэширования слоев Docker
-COPY package.json package-lock.json* ./
+# Копируем ключи кэширования пакетов для Docker
+COPY package.json package-lock.json ./
+# Бережно переносим всю папку prisma (со схемой и новым конфигурационным файлом)
 COPY prisma ./prisma/
 
-# Чистая установка всех зависимостей (включая devDependencies для сборки)
-RUN npm ci
+# Вшиваем временную строку подключения для прохождения WASM-валидации Prisma v7 при сборке
+ENV DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder"
+# Отключаем валидацию переменных среды T3-env на этапе компиляции докера
+ENV SKIP_ENV_VALIDATION=1
 
-##### ЭТАП 2: Генерация Prisma и сборка приложения #####
+# Чистая и строгая установка всех зависимостей проекта
+RUN npm ci
+##### ЭТАП 2: Генерация типов базы данных и перенос исходного кода #####
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Переносим установленные node_modules и файлы из предыдущего шага
+# Переносим установленные node_modules и схему Prisma из предыдущего слоя
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/prisma ./prisma
 COPY . .
 
-# Объявляем аргументы сборки для валидатора t3-env
-ARG DATABASE_URL
-ARG AUTH_SECRET
-ARG GITHUB_CLIENT_ID
-ARG GITHUB_CLIENT_SECRET
-ARG NEXTAUTH_URL
-
-# Переводим аргументы в переменные окружения для процесса npm run build
-ENV DATABASE_URL=$DATABASE_URL
-ENV AUTH_SECRET=$AUTH_SECRET
-ENV GITHUB_CLIENT_ID=$GITHUB_CLIENT_ID
-ENV GITHUB_CLIENT_SECRET=$GITHUB_CLIENT_SECRET
-ENV NEXTAUTH_URL=$NEXTAUTH_URL
+# Продублируем переменные сборки для стабильности компилятора Next.js
+ENV DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder"
+ENV SKIP_ENV_VALIDATION=1
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# ПРИНУДИТЕЛЬНАЯ ГЕНЕРАЦИЯ КЛИЕНТА
+# Запуск генерации типов Prisma Client перед началом компиляции кода
 RUN npx prisma generate
 
-# Сборка Next.js приложения
+# Продолжение ЭТАПА 2: Сборка статических и standalone-файлов приложения
 RUN npm run build
 
-##### ЭТАП 3: Финальный продакшн-образ #####
+# Если в вашем package.json команда build не включает prisma generate, 
+# то финал сборки выглядит как: RUN npx prisma generate && npm run build
+
+# Очищаем dev-зависимости, оставляя в node_modules только продакшн-пакеты
+RUN npm prune --production
+
+##### ЭТАП 3: Минимальный изолированный образ для запуска на сервере #####
 FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Создаем системного пользователя для безопасности
+# Создаем системную группу и пользователя для защиты от root-уязвимостей
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Копируем собранный проект и необходимые файлы
+# Копируем только те легковесные результаты, которые нужны для работы Next.js Standalone
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/package.json ./package.json
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
 
-# Копируем собранный Next.js (standalone режим оптимизирует размер)
-# Если у вас в next.config.js не настроен output: 'standalone', 
-# то эти строки скопируют стандартную сборку:
-COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
-
+# Переключаем управление на безопасного пользователя
 USER nextjs
 
 EXPOSE 3000
-
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["npm", "start"]
-# ... ваши предыдущие строки копирования файлов ...
-COPY package.json package-lock.json ./
-COPY prisma ./prisma/
+# Команда запуска автономного нод-сервера вашего PWA приложения
+CMD ["node", "server.js"]
 
-# Вшиваем дефолтную строку, чтобы Prisma пропустила валидацию при сборке:
-ENV DATABASE_URL="postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
-
-RUN npm ci
