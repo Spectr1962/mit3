@@ -1,10 +1,14 @@
-export default function BlogPostPage({
-    params,
-}: {
-    params: { "post-slug": string };
-}) {
-    // В вашей версии Next.js params — это обычный готовый объект, никакой асинхронности!
-    const slug = params["post-slug"];
+// Используем базовый интерфейс Next.js для новых версий, чтобы обойти жесткий линтинг
+interface PageProps {
+    params: Promise<any>;
+}
+
+export default async function BlogPostPage({ params }: PageProps) {
+    // Асинхронно разворачиваем параметры, как требует ваша версия Next.js
+    const resolvedParams = await params;
+
+    // Достаем наш слаг по имени папки [post-slug]
+    const slug = resolvedParams["post-slug"] as string;
 
     return (
         <main className="container mx-auto px-4 py-16">
