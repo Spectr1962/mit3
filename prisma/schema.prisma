@@ -1,201 +1,151 @@
-datasource db {
-  provider = "postgresql"
-}
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly
 
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+
 // ==========================================
-// 🔐 СИСТЕМНЫЙ БЛОК (АВТОРИЗАЦИЯ И СЕССИИ)
+// СИСТЕМНЫЙ СЛОЙ: NEXTAUTH & АВТОРИЗАЦИЯ
 // ==========================================
 
 model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.Text
-  session_state     String?
+    id                       String  @id @default(cuid())
+    userId                   String
+    type                     String
+    provider                 String
+    providerAccountId        String
+    refresh_token            String? // @db.Text
+    access_token             String? // @db.Text
+    expires_at               Int?
+    token_type               String?
+    scope                    String?
+    id_token                 String? // @db.Text
+    session_state            String?
+    user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    refresh_token_expires_in Int?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
+    @@unique([provider, providerAccountId])
 }
 
 model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    id           String   @id @default(cuid())
+    sessionToken String   @unique
+    userId       String
+    expires      DateTime
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
+    id            String    @id @default(cuid())
+    name          String?
+    email         String?   @unique
+    emailVerified DateTime?
+    image         String?
+    accounts      Account[]
+    sessions      Session[]
 }
 
 model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
+    identifier String
+    token      String   @unique
+    expires    DateTime
 
-  @@unique([identifier, token])
+    @@unique([identifier, token])
 }
 
 // ==========================================
-// 🧱 КОММЕРЧЕСКИЙ И SEO БЛОК АГЕНТСТВА MIT3
+// СЛОЙ 1: КОММЕРЧЕСКИЙ КАТАЛОГ УСЛУГ (SEO)
 // ==========================================
 
-// 1. ВЕРХНИЙ СЛОЙ: НАПРАВЛЕНИЯ (Хабы, например: Разработка, Маркетинг, Дизайн)
-model Category {
-  id              String    @id @default(cuid())
-  title           String    // Видимое название направления (например, "Разработка")
-  slug            String    @unique // ЧПУ-ссылка (например, "razrabotka")
-  shortTitle      String?   // Короткое название для мобильного меню (например, "PWA")
-  description     String?   @db.Text // Вводное описание для людей
-  services        Service[] // Связь: в одном направлении может быть много услуг
-  faqItems        FaqItem[] // Связь: вопросы и ответы для этого направления
-  projects        Project[] // Связь: выполненные кейсы, привязанные к этому направлению
-  reviews         Review[]  // Связь: отзывы клиентов по этому направлению
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+// Направления услуг (Например: разработка, seo, маркетинг)
+model ServiceSector {
+    id        String    @id @default(cuid())
+    slug      String    @unique // Например: "development", "seo"
+    name      String    // Название сектора
+    shortDesc String    // Краткое описание для плитки на хабе услуг
+    icon      String    // Название иконки для фронтенда (Lucide-react)
+    priority  Int       @default(0) // Сортировка порядка вывода на экране
+    
+    // Обратная связь: один сектор содержит много конкретных услуг
+    services  Service[]
 
-  // --- ИДЕАЛЬНЫЙ SEO-БЛОК ДЛЯ НАПРАВЛЕНИЯ ---
-  seoTitle        String?   // Тег <title> (до 60-70 символов)
-  seoDescription  String?   @db.Text // Тег <meta description> (до 160 символов)
-  seoKeywords     String?   // Ключевые слова через запятую
-  h1              String?   // Главный поисковый заголовок H1 на самой странице
-  metaRobots      String    @default("index, follow") // Управление индексацией (разрешить/запретить)
-  canonicalUrl    String?   // Канонический URL для защиты от дублей страниц
-  breadcrumbTitle String?   // Короткое имя для навигационной цепочки "хлебных крошек"
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
 
-  // --- АВТОМАТИЗАЦИЯ SITEMAP (ДЛЯ СВЕРХБЫСТРОЙ ИНДЕКСАЦИИ) ---
-  sitemapPriority   Float     @default(1.0)      // Приоритет страницы в sitemap.xml (от 0.0 до 1.0)
-  sitemapChangefreq String    @default("weekly") // Как часто обновляется (daily, weekly)
-
-  // --- КРАСИВЫЕ ССЫЛКИ ДЛЯ МЕССЕНДЖЕРОВ (Open Graph) ---
-  ogTitle         String?   
-  ogImage         String?   
-
-  // --- КАСТОМИЗАЦИЯ ФОРМЫ ЗАХВАТА (CTA) ---
-  ctaTitle        String?   @default("Обсудить проект")
-  ctaDescription  String?   @db.Text
+    @@index([slug])
 }
 
-// 2. СРЕДНИЙ СЛОЙ: КОНЕЧНЫЕ УСЛУГИ (например: Создание PWA-сайта, Мобильное приложение)
+// Конечные услуги инструментов (Например: pwa-development, seo-audit)
 model Service {
-  id              String   @id @default(cuid())
-  title           String   // Название конкретной услуги (например, "Создание PWA-сайта")
-  slug            String   @unique // ЧПУ-ссылка (например, "pwa-development")
-  shortTitle      String?  // Короткое название для хлебных крошек и мобильных экранов
-  priceFrom       Int      @default(0) // Базовая стоимость услуги "От..."
-  categoryId      String
-  category        Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  modules         Module[] // Связь: у услуги есть модули стоимости
-  faqItems        FaqItem[] // Связь: уникальные вопросы и ответы для конкретной услуги
-  projects        Project[] // Связь: кейсы конкретно по этой услуге
-  reviews         Review[]  // Связь: отзывы конкретно по этой услуге
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+    id          String        @id @default(cuid())
+    slug        String        @unique // ЧПУ URL-адрес
+    name        String        // Краткое название для вывода в списках
+    titleH1     String        // Главный h1-заголовок на посадочной странице
+    description String        // Вводный продающий абзац
+    
+    // SEO-метаданные
+    metaTitle   String
+    metaDesc    String
+    keywords    String?       // LSI околоцелевые слова для роботов через запятую
 
-  // --- СЕО-ПАРАМЕТРЫ ДЛЯ СТРАНИЦЫ УСЛУГИ ---
-  durationDays    Int      @default(5)  // Сроки выполнения (например, 14 дней) для микроразметки
-  techStack       String?  // Стек технологий (Next.js, Tailwind, PWA) для таблицы параметров
-  readingTime     Int      @default(3)  // Время чтения страницы в минутах для фактора доверия
-  relatedIds      String[] @default([]) // Массив ID связанных услуг для идеальной внутренней перелинковки
+    // Коммерческие данные (для цен в микроразметке Product)
+    priceFrom   Int           // Минимальный чек (число для валидации в Schema.org)
+    currency    String        @default("RUB")
 
-  // --- ИДЕАЛЬНЫЙ SEO-БЛОК ДЛЯ СТРАНИЦЫ УСЛУГИ ---
-  seoTitle        String?   // Тег <title> для страницы услуги
-  seoDescription  String?   @db.Text // Тег <meta description> для страницы услуги
-  seoKeywords     String?   // Ключевые слова страницы услуги
-  h1              String?   // Главный поисковый заголовок H1 на странице услуги
-  contentMarkdown String?   @db.Text // Глубокий SEO-текст (LSI-копирайтинг, списки, H2, H3 подзаголовки)
-  metaRobots      String    @default("index, follow") // Команда индексации для роботов
-  canonicalUrl    String?   // Ссылка на оригинал страницы
-  breadcrumbTitle String?   // Имя в цепочке навигации (например, "PWA-сайты")
+    // Конструктор блоков (гибкие данные через JSON)
+    features    Json          // Преимущества / боли (Массив строк/объектов)
+    tariffs     Json          // Сетка тарифов (Название, Описание, Цена, Опции)
+    faq         Json          // Вопросы и ответы для разметки FAQPage
 
-  // --- АВТОМАТИЗАЦИЯ SITEMAP ---
-  sitemapPriority   Float     @default(0.8)      // Приоритет для страниц услуг
-  sitemapChangefreq String    @default("monthly") // Обновляется реже (monthly)
+    // Прямая связь с родительским сектором
+    sectorId    String
+    sector      ServiceSector @relation(fields: [sectorId], references: [id], onDelete: Cascade)
 
-  // --- КРАСИВЫЕ ССЫЛКИ ДЛЯ МЕССЕНДЖЕРОВ (Open Graph) ---
-  ogTitle         String?   
-  ogImage         String?   
+    // Перекрестная связь: какие статьи или кейсы Медиацентра привязаны к этой услуге
+    posts       Post[]
 
-  // --- КАСТОМИЗАЦИЯ ФОРМЫ ЗАХВАТА (CTA) ---
-  ctaTitle        String?   @default("Рассчитать стоимость услуги")
-  ctaDescription  String?   @db.Text
+    createdAt   DateTime      @default(now())
+    updatedAt   DateTime      @updatedAt
+
+    @@index([slug])
+    @@index([sectorId])
 }
 
-// 3. НИЖНИЙ СЛОЙ: МОДУЛЬНАЯ СИСТЕМА (Конструктор фич и интерактивного калькулятора цен)
-model Module {
-  id          String   @id @default(cuid())
-  title       String   // Название модуля (например, "Личный кабинет")
-  description String?  @db.Text // Технические фичи, входящие в модуль
-  price       Int      @default(0) // Стоимость этого конкретного модуля
-  order       Int      @default(0) // Порядок вывода модуля на экране (сортировка)
-  serviceId   String
-  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-}
+// ==========================================
+// СЛОЙ 2: ЛОКОМОТИВ SEO — МЕДИАЦЕНТР (БЛОГ / КЕЙСЫ)
+// ==========================================
 
-// 4. БЛОК ВОПРОСОВ И ОТВЕТОВ (FAQ — Schema.org микроразметка для сниппетов в Яндексе/Google)
-model FaqItem {
-  id          String    @id @default(cuid())
-  question    String    // Сам вопрос (например, "Каковы сроки разработки?")
-  answer      String    @db.Text // Подробный развернутый ответ со словами-маркерами
-  order       Int       @default(0) // Порядок вывода вопросов (выше/ниже)
-  createdAt   DateTime  @default(now())
+// Модель для ежедневных публикаций и разборов ниш
+model Post {
+    id             String   @id @default(cuid())
+    slug           String   @unique // ЧПУ статьи, например: "kejs-pwa-dlya-stomatologii"
+    title          String   // Заголовок материала
+    leadText       String   // Краткий анонс для карточки на Главной (200-300 симв.)
+    content        String   // Основное тело статьи (Markdown или HTML)
+    bannerImage    String?  // Ссылка на обложку для красивого OG-тега в соцсетях
+    videoUrl       String?  // Ссылка на YouTube ролик, если есть расшифровка видео
 
-  // Опциональные связи (вопрос может принадлежать либо Направлению, либо конкретной Услуге)
-  categoryId  String?
-  category    Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  serviceId   String?
-  service     Service?  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
-}
+    // Рубрикатор Медиацентра
+    topic          String   @default("trends") // Например: trends, cases, automation
 
-// 5. КЕЙСЫ / ПОРТФОЛИО (Фактор доверия E-E-A-T для поисковых систем и крупных клиентов)
-model Project {
-  id          String    @id @default(cuid())
-  title       String    // Название кейса (например, "PWA-платформа для автодилера")
-  slug        String    @unique // ЧПУ-ссылка на кейс (case-autodealer)
-  description String?   @db.Text // Описание проделанной работы
-  imageUrl    String?   // Ссылка на превью-картинку кейса
-  resultText  String?   @db.Text // Главный результат в цифрах (например, "+45% к конверсии")
-  createdAt   DateTime  @default(now())
+    // SEO-разметка дат (Считывается роботами в NewsArticle)
+    datePublished  DateTime @default(now())
+    dateModified   DateTime @updatedAt
 
-  // Автоматическая перелинковка кейса с разделами сайта
-  categoryId  String?
-  category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  serviceId   String?
-  service     Service?  @relation(fields: [serviceId], references: [id], onDelete: SetNull)
-}
+    // Связь с коммерческой услугой (какой инструмент рекламируем в статье)
+    relatedServiceId String?
+    relatedService   Service? @relation(fields: [relatedServiceId], references: [id], onDelete: SetNull)
 
-// 6. ОТЗЫВЫ КЛИЕНТОВ (Рейтинги и социальное доказательство для Яндекса/Google)
-model Review {
-  id           String    @id @default(cuid())
-  clientName   String    // Имя клиента или название компании (например, "ООО Вектор")
-  clientAvatar String?   // Ссылка на логотип компании или фото
-  text         String    @db.Text // Текст отзыва
-  rating       Int       @default(5) // Оценка (от 1 до 5 звезд для вывода желтых звезд в поисковик)
-  createdAt    DateTime  @default(now())
+    createdAt      DateTime @default(now())
+    updatedAt      DateTime @updatedAt
 
-  // Привязка отзыва к разделам сайта
-  categoryId   String?
-  category     Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  serviceId    String?
-  service      Service?  @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+    @@index([slug])
+    @@index([relatedServiceId])
 }
