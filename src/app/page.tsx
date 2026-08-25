@@ -23,7 +23,7 @@ export default function HomePage() {
   // Эффект синхронизации: безопасно прокидываем бэкенд-данные в стейт страницы
   useEffect(() => {
     if (dbSectors) {
-      setSectors(dbSectors as SectorWithServices[]);
+      setSectors(dbSectors);
     }
   }, [dbSectors]);
   return (
