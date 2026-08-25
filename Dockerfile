@@ -69,3 +69,11 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 CMD ["npm", "start"]
+# ... ваши предыдущие строки копирования файлов ...
+COPY package.json package-lock.json ./
+COPY prisma ./prisma/
+
+# Вшиваем дефолтную строку, чтобы Prisma пропустила валидацию при сборке:
+ENV DATABASE_URL="postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
+
+RUN npm ci
