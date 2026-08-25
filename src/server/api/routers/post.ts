@@ -5,16 +5,28 @@ import { Prisma } from "@prisma/client";
 export const postRouter = createTRPCRouter({
     // 1. Процедура получения всех секторов (направлений) для выпадающего списка
     getSectors: publicProcedure.query(async ({ ctx }) => {
-        return await ctx.db.serviceSector.findMany({
-            orderBy: { priority: "desc" },
-        });
+        try {
+            return await ctx.db.serviceSector.findMany({
+                orderBy: { priority: "desc" },
+                include: { services: true }
+            });
+        } catch (error) {
+            console.error("База данных недоступна при сборке (post:getSectors):", error);
+            return [];
+        }
     }),
 
     // Дополнительный алиас для обратной совместимости с фронтендом админки
     getCategories: publicProcedure.query(async ({ ctx }) => {
-        return await ctx.db.serviceSector.findMany({
-            orderBy: { priority: "desc" },
-        });
+        try {
+            return await ctx.db.serviceSector.findMany({
+                orderBy: { priority: "desc" },
+                include: { services: true }
+            });
+        } catch (error) {
+            console.error("База данных недоступна при сборке (post:getCategories):", error);
+            return [];
+        }
     }),
 
     // 2. Процедура создания новой коммерческой услуги из админки
@@ -66,19 +78,29 @@ export const postRouter = createTRPCRouter({
     getServicesBySector: publicProcedure
         .input(z.object({ sectorId: z.string() }))
         .query(async ({ ctx, input }) => {
-            return await ctx.db.service.findMany({
-                where: { sectorId: input.sectorId },
-                orderBy: { createdAt: "desc" },
-            });
+            try {
+                return await ctx.db.service.findMany({
+                    where: { sectorId: input.sectorId },
+                    orderBy: { createdAt: "desc" },
+                });
+            } catch (error) {
+                console.error("База данных недоступна при сборке (post:getServicesBySector):", error);
+                return [];
+            }
         }),
 
     // Дополнительный алиас для совместимости с getServicesByCategory
     getServicesByCategory: publicProcedure
         .input(z.object({ categoryId: z.string() }))
         .query(async ({ ctx, input }) => {
-            return await ctx.db.service.findMany({
-                where: { sectorId: input.categoryId },
-                orderBy: { createdAt: "desc" },
-            });
+            try {
+                return await ctx.db.service.findMany({
+                    where: { sectorId: input.categoryId },
+                    orderBy: { createdAt: "desc" },
+                });
+            } catch (error) {
+                console.error("База данных недоступна при сборке (post:getServicesByCategory):", error);
+                return [];
+            }
         }),
 });
