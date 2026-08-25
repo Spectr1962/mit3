@@ -1,10 +1,3 @@
-import { type Metadata } from "next";
-
-export const metadata: Metadata = {
-    title: "Проектирование и разработка цифровых PWA-хабов для бизнеса",
-    description: "Создаем высокотехнологичные PWA-платформы нового поколения на Next.js под ключ. Offline-режим, установка на экран смартфона в 1 клик, бесплатные Push-уведомления вместо дорогих SMS.",
-};
-
 export default function DevelopmentServicePage() {
     return (
         <main className="container mx-auto px-4 py-16">
@@ -49,7 +42,6 @@ export default function DevelopmentServicePage() {
                 <p className="text-muted-foreground mb-6">
                     Мы адаптируем PWA-платформу под специфику любой ниши: от медицины и автошкол до заводов металлоконструкций. Подробные разборы решений выходят каждый день в нашем Медиацентре.
                 </p>
-                {/* В будущем здесь будет интерактивный клиентский React-компонент с фильтрацией кейсов из Prisma */}
                 <div className="inline-block px-4 py-2 bg-muted rounded-lg text-sm text-muted-foreground font-mono">
                     [Блок подгрузки кейсов из базы данных готов к интеграции]
                 </div>
