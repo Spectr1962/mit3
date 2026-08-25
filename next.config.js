@@ -10,9 +10,12 @@ const withPWA = withPWAInit({
 const config = {
     reactStrictMode: true,
     output: "standalone", // <--- ОБЯЗАТЕЛЬНО ДОБАВЬ ЭТУ СТРОКУ ДЛЯ DEVOPS/DOCKER
-    typescript: {
-        ignoreBuildErrors: true,
+    eslint: {
+        ignoreDuringBuilds: false,
     },
+    typescript: {
+        ignoreBuildErrors: false,
+    }
 };
 
 export default withPWA(config);
