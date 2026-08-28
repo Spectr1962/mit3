@@ -101,7 +101,8 @@ jobs:
             sleep 5
             if [ "$(docker inspect -f '{{.State.Running}}' mit3-app)" != "true" ]; then
               echo "КРИТИЧЕСКАЯ ОШИБКА: Контейнер упал сразу после запуска!"
-              docker logs mit3-app
+              docker inspect -f 'status={{.State.Status}} exit={{.State.ExitCode}} error={{.State.Error}}' mit3-app || true
+              docker logs --tail 100 mit3-app || true
               exit 1
             fi
 
