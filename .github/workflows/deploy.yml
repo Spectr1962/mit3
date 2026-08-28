@@ -121,9 +121,13 @@ jobs:
               exit 1
             fi
 
-            # 5. БЕЗОПАСНЫЕ МИГРАЦИИ PRISMA (Защита базы данных от уничтожения)
-            # Заменяет небезопасный db push. Накатывает только зафиксированные SQL-файлы миграций.
-            docker exec -e DATABASE_URL="${{ secrets.DATABASE_URL }}" mit3-app npx prisma migrate deploy
+            # 5. Подготавливаем поля DB-аутентификации без удаления существующих данных
+            docker exec -e DATABASE_URL="${{ secrets.DATABASE_URL }}" mit3-app node prisma/ensure-auth-schema.mjs
+            docker exec \
+              -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+              -e AUTH_ADMIN_LOGIN="$AUTH_ADMIN_LOGIN" \
+              -e AUTH_ADMIN_PASSWORD="$AUTH_ADMIN_PASSWORD" \
+              mit3-app node prisma/seed-admin.mjs
 
             # 6. АГРЕССИВНАЯ ОЧИСТКА СЕРВЕРА
             # Полностью удаляет старые слои и неиспользуемые тяжелые образы, освобождая диск VPS.

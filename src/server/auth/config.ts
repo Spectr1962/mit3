@@ -1,4 +1,5 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
+import bcrypt from "bcryptjs";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { db } from "~/server/db";
@@ -7,9 +8,14 @@ import { db } from "~/server/db";
  * Расширение типов для сессии
  */
 declare module "next-auth" {
+  interface User {
+    role: string;
+  }
+
   interface Session {
     user: {
       id: string;
+      role: string;
     } & DefaultSession["user"];
   }
 }
@@ -28,22 +34,23 @@ export const authConfig = {
       async authorize(credentials) {
         const login = String(credentials?.login ?? "").trim();
         const password = String(credentials?.password ?? "");
-        const configuredLogin = process.env.AUTH_ADMIN_LOGIN;
-        const configuredPassword = process.env.AUTH_ADMIN_PASSWORD;
+        if (!login || !password) {
+          return null;
+        }
 
+        const user = await db.user.findUnique({ where: { login } });
         if (
-          !configuredLogin ||
-          !configuredPassword ||
-          login !== configuredLogin ||
-          password !== configuredPassword
+          !user?.passwordHash ||
+          !(await bcrypt.compare(password, user.passwordHash))
         ) {
           return null;
         }
 
         return {
-          id: configuredLogin,
-          name: configuredLogin,
-          email: configuredLogin,
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
         };
       },
     }),
@@ -54,10 +61,15 @@ export const authConfig = {
     jwt: ({ token, user }) => ({
       ...token,
       ...(user?.id ? { userId: user.id } : {}),
+      ...(user?.role ? { role: user.role } : {}),
     }),
     session: ({ session, token }) => ({
       ...session,
-      user: { ...session.user, id: String(token.userId ?? token.sub ?? "") },
+      user: {
+        ...session.user,
+        id: String(token.userId ?? token.sub ?? ""),
+        role: String(token.role ?? "user"),
+      },
     }),
   },
   pages: {
