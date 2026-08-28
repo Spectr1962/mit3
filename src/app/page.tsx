@@ -23,7 +23,7 @@ export default function Home() {
           {health.isPending && <Skeleton className="h-4 max-w-sm" />}
           <div className="flex flex-wrap gap-3">
             <Link href="/api/health" className="rounded-full bg-sky-400 px-5 py-3 font-bold text-slate-950 transition hover:bg-sky-300">Проверить API</Link>
-            <a href="/manifest.json" className="rounded-full border border-white/20 px-5 py-3 font-bold text-white transition hover:bg-white/10">Открыть manifest</a>
+            <a href="/manifest.webmanifest" className="rounded-full border border-white/20 px-5 py-3 font-bold text-white transition hover:bg-white/10">Открыть manifest</a>
           </div>
         </section>
         <footer className="grid gap-3 border-t border-white/10 pt-5 text-sm text-slate-400 sm:grid-cols-3">

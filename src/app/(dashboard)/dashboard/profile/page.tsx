@@ -1,0 +1,2 @@
+export const metadata = { title: "Профиль | MIT3", robots: { index: false, follow: false } };
+export default function ProfilePage() { return <section className="space-y-5"><p className="text-sm font-bold uppercase tracking-[0.22em] text-sky-300">Профиль</p><h1 className="text-4xl font-black">Настройки профиля</h1><p className="text-slate-400">Раздел готов для персональных данных и настроек уведомлений.</p></section>; }

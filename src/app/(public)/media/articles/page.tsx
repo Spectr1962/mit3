@@ -1,0 +1,4 @@
+import Link from "next/link";
+import { db } from "~/server/db";
+export const metadata = { title: "Статьи | MIT3", alternates: { canonical: "/media/articles" } };
+export default async function ArticlesPage() { const articles = await db.article.findMany({ where: { published: true }, include: { direction: true }, orderBy: { publishedAt: "desc" } }).catch(() => []); return <section className="space-y-8"><h1 className="text-4xl font-black">Статьи</h1><div className="grid gap-4">{articles.length ? articles.map((article) => <Link key={article.id} href={`/media/articles/${article.direction?.slug ?? "general"}/${article.slug}`} className="rounded-xl border border-white/10 p-5 hover:border-sky-300/60"><h2 className="font-bold">{article.title}</h2><p className="mt-2 text-sm text-slate-400">{article.excerpt}</p></Link>) : <p className="text-slate-400">Опубликованных материалов пока нет.</p>}</div></section>; }

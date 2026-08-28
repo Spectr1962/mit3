@@ -10,6 +10,7 @@ const withSerwist = withSerwistInit({
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  reactStrictMode: true,
   turbopack: {},
 };
 

@@ -1,0 +1,2 @@
+export const metadata = { title: "Пользователи | Admin", robots: { index: false, follow: false } };
+export default function AdminUsersPage() { return <section className="space-y-5"><p className="text-sm font-bold uppercase tracking-[0.22em] text-amber-300">Admin / Users</p><h1 className="text-4xl font-black">Пользователи</h1><p className="text-slate-400">Раздел для управления ролями и доступом.</p></section>; }

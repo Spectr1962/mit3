@@ -1,0 +1,4 @@
+export const metadata = { title: "Портфолио | MIT3", alternates: { canonical: "/media/portfolio" } };
+import Link from "next/link";
+import { db } from "~/server/db";
+export default async function PortfolioPage() { const entries = await db.mediaEntry.findMany({ where: { type: "portfolio", published: true }, orderBy: { publishedAt: "desc" } }).catch(() => []); return <section className="space-y-6"><p className="text-sm font-bold uppercase tracking-[0.22em] text-sky-300">Медиацентр</p><h1 className="text-4xl font-black">Портфолио</h1><div className="grid gap-4 sm:grid-cols-2">{entries.length ? entries.map((entry) => <Link key={entry.id} href={`/media/portfolio/${entry.id}`} className="rounded-xl border border-white/10 p-5 hover:border-sky-300/60"><h2 className="font-bold">{entry.title}</h2><p className="mt-2 text-sm text-slate-400">{entry.excerpt}</p></Link>) : <p className="text-slate-400">Кейсы появятся здесь.</p>}</div></section>; }

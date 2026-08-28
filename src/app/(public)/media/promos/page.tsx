@@ -1,0 +1,4 @@
+export const metadata = { title: "Промо | MIT3", alternates: { canonical: "/media/promos" } };
+import Link from "next/link";
+import { db } from "~/server/db";
+export default async function PromosPage() { const entries = await db.mediaEntry.findMany({ where: { type: "promo", published: true }, orderBy: { publishedAt: "desc" } }).catch(() => []); return <section className="space-y-6"><p className="text-sm font-bold uppercase tracking-[0.22em] text-sky-300">Медиацентр</p><h1 className="text-4xl font-black">Акции и предложения</h1><div className="grid gap-4">{entries.length ? entries.map((entry) => <Link key={entry.id} href={`/media/promos/${entry.id}`} className="rounded-xl border border-white/10 p-5 hover:border-sky-300/60"><h2 className="font-bold">{entry.title}</h2><p className="mt-2 text-sm text-slate-400">{entry.excerpt}</p></Link>) : <p className="text-slate-400">Активных предложений пока нет.</p>}</div></section>; }

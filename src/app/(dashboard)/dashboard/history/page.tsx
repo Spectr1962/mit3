@@ -1,0 +1,2 @@
+export const metadata = { title: "История | MIT3", robots: { index: false, follow: false } };
+export default function HistoryPage() { return <section className="space-y-5"><p className="text-sm font-bold uppercase tracking-[0.22em] text-sky-300">История</p><h1 className="text-4xl font-black">История активности</h1><p className="text-slate-400">Здесь появятся заявки, проекты и события рабочего пространства.</p></section>; }

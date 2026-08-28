@@ -1,0 +1,2 @@
+export const metadata = { title: "Услуги | Admin", robots: { index: false, follow: false } };
+export default function AdminServicesPage() { return <section className="space-y-5"><p className="text-sm font-bold uppercase tracking-[0.22em] text-amber-300">Admin / Services</p><h1 className="text-4xl font-black">Управление услугами</h1><p className="text-slate-400">CRUD для направлений, категорий и услуг подключается к Prisma.</p></section>; }

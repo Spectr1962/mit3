@@ -1,0 +1,2 @@
+import { DashboardOverviewChart } from "~/components/dashboard-overview-chart";
+export default function AdminPage() { return <section className="space-y-6"><p className="text-sm font-bold uppercase tracking-[0.22em] text-amber-300">Администрирование</p><h1 className="text-4xl font-black">Admin Console</h1><p className="text-slate-400">Аналитика контента и рабочих сценариев.</p><DashboardOverviewChart /></section>; }

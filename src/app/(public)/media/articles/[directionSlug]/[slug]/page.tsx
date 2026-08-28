@@ -1,0 +1,4 @@
+import { notFound } from "next/navigation";
+import { db } from "~/server/db";
+export async function generateMetadata({ params }: { params: Promise<{ directionSlug: string; slug: string }> }) { const { slug } = await params; const article = await db.article.findUnique({ where: { slug } }).catch(() => null); return { title: article ? `${article.title} | MIT3` : "Статья | MIT3", alternates: { canonical: `/media/articles/${(await params).directionSlug}/${slug}` } }; }
+export default async function ArticlePage({ params }: { params: Promise<{ directionSlug: string; slug: string }> }) { const { slug, directionSlug } = await params; const article = await db.article.findFirst({ where: { slug, published: true } }).catch(() => null); if (!article) notFound(); return <article className="prose prose-invert max-w-3xl"><p className="text-sm text-sky-300">{directionSlug}</p><h1>{article.title}</h1><p>{article.content}</p></article>; }

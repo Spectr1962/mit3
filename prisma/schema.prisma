@@ -13,3 +13,73 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model Direction {
+  id         String     @id @default(cuid())
+  slug       String     @unique
+  name       String
+  categories Category[]
+  articles   Article[]
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+model Category {
+  id          String     @id @default(cuid())
+  slug        String
+  name        String
+  directionId String
+  direction   Direction   @relation(fields: [directionId], references: [id], onDelete: Cascade)
+  services    Service[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@unique([directionId, slug])
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Article {
+  id           String    @id @default(cuid())
+  slug         String    @unique
+  title        String
+  excerpt      String
+  content      String
+  published    Boolean   @default(false)
+  directionId  String?
+  direction    Direction? @relation(fields: [directionId], references: [id], onDelete: SetNull)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  publishedAt  DateTime?
+}
+
+model MediaEntry {
+  id          String   @id @default(cuid())
+  type        String
+  title       String
+  excerpt     String
+  content     String
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  publishedAt DateTime?
+
+  @@index([type, published])
+}
+
+model DashboardItem {
+  id        String   @id @default(cuid())
+  title     String
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

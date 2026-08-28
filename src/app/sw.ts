@@ -7,7 +7,8 @@ import { Serwist } from "serwist";
 declare const self: ServiceWorkerGlobalScope & SerwistGlobalConfig;
 
 const serwist = new Serwist({
-  precacheEntries: (self as unknown as { __SW_MANIFEST: PrecacheEntry[] }).__SW_MANIFEST,
+  precacheEntries: (self as unknown as { __SW_MANIFEST: PrecacheEntry[] })
+    .__SW_MANIFEST,
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
