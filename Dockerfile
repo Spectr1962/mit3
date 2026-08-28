@@ -67,5 +67,5 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 # Команда запуска автономного нод-сервера вашего PWA приложения
-CMD ["node", "server.js"]
+CMD ["node", "prisma/bootstrap-auth.mjs"]
 
