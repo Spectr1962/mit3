@@ -105,6 +105,22 @@ jobs:
               exit 1
             fi
 
+            echo "Состояние контейнера и портов:"
+            docker ps --filter name=mit3-app --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
+            if docker exec mit3-app sh -c 'test -n "$AUTH_ADMIN_LOGIN" && test -n "$AUTH_ADMIN_PASSWORD"'; then
+              echo "Auth-переменные в контейнере присутствуют."
+            else
+              echo "КРИТИЧЕСКАЯ ОШИБКА: Auth-переменные не переданы в контейнер!"
+              exit 1
+            fi
+            if docker exec mit3-app wget -q -O- http://127.0.0.1:3000/api/auth/providers >/dev/null; then
+              echo "Auth API отвечает внутри контейнера."
+            else
+              echo "КРИТИЧЕСКАЯ ОШИБКА: Auth API не отвечает внутри контейнера!"
+              docker logs --tail 100 mit3-app
+              exit 1
+            fi
+
             # 5. БЕЗОПАСНЫЕ МИГРАЦИИ PRISMA (Защита базы данных от уничтожения)
             # Заменяет небезопасный db push. Накатывает только зафиксированные SQL-файлы миграций.
             docker exec -e DATABASE_URL="${{ secrets.DATABASE_URL }}" mit3-app npx prisma migrate deploy
