@@ -37,4 +37,6 @@ Workflow `.github/workflows/deploy.yml` собирает образ, публи�
 - `src/server/api` - tRPC router и процедуры;
 - `src/server/db.ts` - Prisma Client с PostgreSQL adapter;
 - `prisma` - схема, конфигурация и seed;
-- `public/sw.js` - минимальный service worker PWA.
+- `src/app/sw.ts` - typed service worker Serwist;
+- `src/app/manifest.ts` - Web App Manifest;
+- `src/app/app-shell.tsx` - native-like shell и offline banner.
