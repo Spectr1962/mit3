@@ -37,16 +37,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             },
         }),
 
-        // ГЛАВНЫЙ ФИЛЬТР БЕЗОПАСНОСТИ АДМИНКИ:
         signIn({ user }) {
-            const adminEmail = "larionov.igor1987@yandex.ru"; // 👈 УКАЖИ ЗДЕСЬ СВОЙ РЕАЛЬНЫЙ EMAIL НА GITHUB
-
-            if (user.email === adminEmail) {
-                return true; // Пропускаем в админку только тебя
-            }
-
-            console.log(`🔒 Заблокирована попытка входа с чужого email: ${user.email}`);
-            return false; // Всех остальных пользователей разворачиваем на входе
+            // Клиенты получают личный кабинет, а доступ к админке проверяется отдельно.
+            return Boolean(user.email);
         },
     },
     // Страница, куда перенаправлять при ошибках авторизации

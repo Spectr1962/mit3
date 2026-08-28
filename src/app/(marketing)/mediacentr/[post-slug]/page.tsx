@@ -1,25 +1,63 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { db } from "~/server/db";
+
 interface PageProps {
-    params: Promise<Record<string, string | string[] | undefined>>;
+    params: Promise<{ "post-slug": string }>;
+}
+
+async function getPost(slug: string) {
+    return db.post.findUnique({
+        where: { slug },
+        include: { relatedService: { select: { name: true, slug: true } } },
+    });
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    const { "post-slug": slug } = await params;
+    const post = await getPost(slug);
+
+    if (!post) return { title: "Материал не найден | Медиацентр" };
+
+    return {
+        title: `${post.title} | Медиацентр`,
+        description: post.leadText,
+        openGraph: {
+            title: post.title,
+            description: post.leadText,
+            type: "article",
+            publishedTime: post.datePublished.toISOString(),
+            modifiedTime: post.dateModified.toISOString(),
+            images: post.bannerImage ? [post.bannerImage] : undefined,
+        },
+    };
 }
 
 export default async function BlogPostPage({ params }: PageProps) {
-    // Асинхронно разворачиваем параметры URL (требование свежих версий Next.js)
-    const resolvedParams = await params;
+    const { "post-slug": slug } = await params;
+    const post = await getPost(slug);
 
-    // Безопасно достаем слаг и приводим его к строке
-    const slug = (resolvedParams["post-slug"] as string) ?? "";
+    if (!post) notFound();
 
     return (
-        <main className="container mx-auto px-4 py-16">
-            <article className="prose max-w-4xl mx-auto">
-                <span className="text-sm text-muted-foreground">Медиацентр / Публикация</span>
-                <h1 className="text-4xl font-bold mt-2 mb-6">Динамическая статья из Prisma</h1>
-                <p className="text-xl text-muted-foreground">
-                    Текущий адрес страницы (слаг): <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono">{slug}</code>
-                </p>
-                <div className="mt-8">
-                    <p>Контент статьи и разбор PWA-решения будут загружаться из базы данных автоматически по этому слагу.</p>
-                </div>
+        <main className="min-h-screen bg-slate-950 text-slate-100">
+            <article className="mx-auto max-w-4xl px-5 py-16 sm:px-8 lg:py-24">
+                <Link href="/mediacentr" className="text-sm font-semibold text-sky-300 hover:text-sky-200">← Все материалы</Link>
+                <header className="mt-10 border-b border-white/10 pb-10">
+                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">{post.topic} · {post.datePublished.toLocaleDateString("ru-RU")}</p>
+                    <h1 className="mt-5 text-4xl font-black tracking-tight sm:text-6xl">{post.title}</h1>
+                    <p className="mt-6 text-xl leading-8 text-slate-300">{post.leadText}</p>
+                </header>
+                <div className="whitespace-pre-wrap py-10 text-lg leading-8 text-slate-200">{post.content}</div>
+                {post.relatedService && (
+                    <aside className="border-t border-white/10 pt-8">
+                        <p className="text-sm text-slate-400">Инструмент из материала</p>
+                        <Link href={`/services/${post.relatedService.slug}`} className="mt-2 inline-block text-lg font-bold text-sky-300 hover:text-sky-200">
+                            {post.relatedService.name} →
+                        </Link>
+                    </aside>
+                )}
             </article>
         </main>
     );

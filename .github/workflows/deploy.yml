@@ -74,6 +74,7 @@ jobs:
               -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
               -e AUTH_SECRET="${{ secrets.AUTH_SECRET }}" \
               -e NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL }}" \
+              -e AUTH_TRUST_HOST="true" \
               -e GITHUB_CLIENT_ID="${{ secrets.AUTH_GITHUB_ID }}" \
               -e GITHUB_CLIENT_SECRET="${{ secrets.AUTH_GITHUB_SECRET }}" \
               ghcr.io/spectr1962/mit3:latest
