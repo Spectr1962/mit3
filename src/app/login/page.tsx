@@ -14,7 +14,7 @@ export default async function LoginPage({ searchParams }: PageProps) {
         if (email !== "larionov.igor1987@yandex.ru") {
             return;
         }
-        await signIn("email", { email, callbackUrl: safeCallbackUrl });
+        await signIn("nodemailer", { email, callbackUrl: safeCallbackUrl });
     }
 
     return (

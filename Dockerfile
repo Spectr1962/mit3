@@ -58,6 +58,8 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
+# Nodemailer is imported by Auth.js at runtime but may be omitted by standalone tracing.
+COPY --from=builder /app/node_modules/nodemailer ./node_modules/nodemailer
 
 # Переключаем управление на безопасного пользователя
 USER nextjs
