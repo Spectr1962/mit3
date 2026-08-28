@@ -8,9 +8,13 @@ export default async function LoginPage({ searchParams }: PageProps) {
     const { callbackUrl = "/dashboard" } = await searchParams;
     const safeCallbackUrl = callbackUrl.startsWith("/") && !callbackUrl.startsWith("//") ? callbackUrl : "/dashboard";
 
-    async function handleSignIn() {
+    async function handleSignIn(formData: FormData) {
         "use server";
-        await signIn("github", { callbackUrl: safeCallbackUrl });
+        const email = String(formData.get("email") ?? "").trim().toLowerCase();
+        if (email !== "larionov.igor1987@yandex.ru") {
+            return;
+        }
+        await signIn("email", { email, callbackUrl: safeCallbackUrl });
     }
 
     return (
@@ -20,11 +24,10 @@ export default async function LoginPage({ searchParams }: PageProps) {
                 <h1 className="mt-4 text-3xl font-black tracking-tight">Войти в рабочее пространство</h1>
                 <p className="mt-4 text-sm leading-6 text-slate-400">Для клиентов и предпринимателей, которые тестируют решение или работают с нами постоянно.</p>
                 <form action={handleSignIn}>
-                    <button
-                    type="submit"
-                    className="mt-8 w-full rounded-xl bg-sky-400 px-5 py-3 font-bold text-slate-950 transition hover:bg-sky-300"
-                    >
-                        Войти через GitHub
+                    <label htmlFor="email" className="mt-6 block text-left text-sm font-semibold text-slate-300">Email</label>
+                    <input id="email" name="email" type="email" required autoComplete="email" className="mt-2 w-full rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none focus:border-sky-400" placeholder="you@example.com" />
+                    <button type="submit" className="mt-4 w-full rounded-xl bg-sky-400 px-5 py-3 font-bold text-slate-950 transition hover:bg-sky-300">
+                        Получить ссылку для входа
                     </button>
                 </form>
             </section>

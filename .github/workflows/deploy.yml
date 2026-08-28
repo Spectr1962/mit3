@@ -42,8 +42,6 @@ jobs:
           build-args: |
             DATABASE_URL=postgresql://postgres:pass@localhost:5432/db
             AUTH_SECRET=placeholder_value_for_build_only
-            GITHUB_CLIENT_ID=placeholder_value_for_build_only
-            GITHUB_CLIENT_SECRET=placeholder_value_for_build_only
             NEXTAUTH_URL=http://localhost:3000
 
   deploy:
@@ -76,8 +74,11 @@ jobs:
               -e AUTH_SECRET="${{ secrets.AUTH_SECRET }}" \
               -e NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL }}" \
               -e AUTH_TRUST_HOST="true" \
-              -e GITHUB_CLIENT_ID="${{ secrets.AUTH_GITHUB_ID }}" \
-              -e GITHUB_CLIENT_SECRET="${{ secrets.AUTH_GITHUB_SECRET }}" \
+              -e EMAIL_SERVER_HOST="${{ secrets.EMAIL_SERVER_HOST }}" \
+              -e EMAIL_SERVER_PORT="${{ secrets.EMAIL_SERVER_PORT }}" \
+              -e EMAIL_SERVER_USER="${{ secrets.EMAIL_SERVER_USER }}" \
+              -e EMAIL_SERVER_PASSWORD="${{ secrets.EMAIL_SERVER_PASSWORD }}" \
+              -e EMAIL_FROM="${{ secrets.EMAIL_FROM }}" \
               ghcr.io/spectr1962/mit3:latest
 
             # 4. HEALTH CHECK (Защита от критических багов на старте)

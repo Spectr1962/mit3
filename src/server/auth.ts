@@ -1,6 +1,6 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import NextAuth, { type DefaultSession } from "next-auth";
-import GitHubProvider from "next-auth/providers/github";
+import EmailProvider from "next-auth/providers/nodemailer";
 import { db } from "~/server/db";
 
 /**
@@ -21,9 +21,16 @@ declare module "next-auth" {
 export const { handlers, auth, signIn, signOut } = NextAuth({
     adapter: PrismaAdapter(db),
     providers: [
-        GitHubProvider({
-            clientId: process.env.GITHUB_CLIENT_ID,
-            clientSecret: process.env.GITHUB_CLIENT_SECRET,
+        EmailProvider({
+            server: {
+                host: process.env.EMAIL_SERVER_HOST,
+                port: Number(process.env.EMAIL_SERVER_PORT ?? 587),
+                auth: {
+                    user: process.env.EMAIL_SERVER_USER,
+                    pass: process.env.EMAIL_SERVER_PASSWORD,
+                },
+            },
+            from: process.env.EMAIL_FROM,
         }),
     ],
     secret: process.env.AUTH_SECRET,
@@ -38,8 +45,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }),
 
         signIn({ user }) {
-            // Клиенты получают личный кабинет, а доступ к админке проверяется отдельно.
-            return Boolean(user.email);
+            return user.email === "larionov.igor1987@yandex.ru";
         },
     },
     // Страница, куда перенаправлять при ошибках авторизации

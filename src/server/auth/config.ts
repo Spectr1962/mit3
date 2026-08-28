@@ -1,6 +1,6 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
-import GitHubProvider from "next-auth/providers/github";
+import EmailProvider from "next-auth/providers/nodemailer";
 import { db } from "~/server/db";
 
 /**
@@ -20,10 +20,17 @@ declare module "next-auth" {
 export const authConfig = {
   adapter: PrismaAdapter(db),
   providers: [
-    GitHubProvider({
-      clientId: process.env.GITHUB_CLIENT_ID,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    })
+    EmailProvider({
+      server: {
+        host: process.env.EMAIL_SERVER_HOST,
+        port: Number(process.env.EMAIL_SERVER_PORT ?? 587),
+        auth: {
+          user: process.env.EMAIL_SERVER_USER,
+          pass: process.env.EMAIL_SERVER_PASSWORD,
+        },
+      },
+      from: process.env.EMAIL_FROM,
+    }),
   ],
   secret: process.env.AUTH_SECRET, // Обязательный секрет для шифрования куки локально
   callbacks: {
@@ -36,17 +43,8 @@ export const authConfig = {
       },
     }),
 
-    // НАДЕЖНАЯ ЗАЩИТА ПО USERNAME GITHUB:
     signIn({ user }) {
-      const adminId = 104278065;
-
-      // 👇 ВСТАВЬ ЭТУ СТРОЧКУ СЮДА:
-      console.log("👉 REAL USER ID FROM GITHUB IS:", user.id);
-
-      if (Number(user.id) == adminId) {
-        return true;
-      }
-      return false;
+      return user.email === "larionov.igor1987@yandex.ru";
     },
   },
   pages: {
