@@ -29,7 +29,7 @@ npm run build
 ## Деплой на VPS
 
 Workflow `.github/workflows/deploy.yml` собирает образ, публикует его в GHCR и запускает на VPS.
-В GitHub Actions Secrets нужны `SERVER_HOST`, `SSH_PRIVATE_KEY`, `DATABASE_URL` и `NEXT_PUBLIC_APP_URL`.
+В GitHub Actions Secrets нужны `SERVER_HOST`, `SSH_PRIVATE_KEY` и `DATABASE_URL`.
 
 ## Структура
 
