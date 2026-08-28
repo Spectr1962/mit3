@@ -1,6 +1,6 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
-import EmailProvider from "next-auth/providers/nodemailer";
+import Credentials from "next-auth/providers/credentials";
 import { db } from "~/server/db";
 
 /**
@@ -20,37 +20,48 @@ declare module "next-auth" {
 export const authConfig = {
   adapter: PrismaAdapter(db),
   providers: [
-    EmailProvider({
-      server: {
-        host: process.env.EMAIL_SERVER_HOST,
-        port: Number(process.env.EMAIL_SERVER_PORT ?? 587),
-        secure: Number(process.env.EMAIL_SERVER_PORT ?? 587) === 465,
-        auth: {
-          user: process.env.EMAIL_SERVER_USER,
-          pass: process.env.EMAIL_SERVER_PASSWORD,
-        },
+    Credentials({
+      credentials: {
+        login: { label: "Логин", type: "text" },
+        password: { label: "Пароль", type: "password" },
       },
-      from: process.env.EMAIL_FROM,
-      maxAge: 10 * 60,
+      async authorize(credentials) {
+        const login = String(credentials?.login ?? "").trim();
+        const password = String(credentials?.password ?? "");
+        const configuredLogin = process.env.AUTH_ADMIN_LOGIN;
+        const configuredPassword = process.env.AUTH_ADMIN_PASSWORD;
+
+        if (
+          !configuredLogin ||
+          !configuredPassword ||
+          login !== configuredLogin ||
+          password !== configuredPassword
+        ) {
+          return null;
+        }
+
+        return {
+          id: configuredLogin,
+          name: configuredLogin,
+          email: configuredLogin,
+        };
+      },
     }),
   ],
+  session: { strategy: "jwt" },
   secret: process.env.AUTH_SECRET, // Обязательный секрет для шифрования куки локально
   callbacks: {
-    // Привязываем ID из базы к сессии фронтенда
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: user.id,
-      },
+    jwt: ({ token, user }) => ({
+      ...token,
+      ...(user?.id ? { userId: user.id } : {}),
     }),
-
-    signIn({ user }) {
-      return user.email === "larionov.igor1987@yandex.ru";
-    },
+    session: ({ session, token }) => ({
+      ...session,
+      user: { ...session.user, id: String(token.userId ?? token.sub ?? "") },
+    }),
   },
   pages: {
-    signIn: "/admin",
-    error: "/admin",
+    signIn: "/login",
+    error: "/login",
   },
 } satisfies NextAuthConfig;

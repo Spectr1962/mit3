@@ -1,6 +1,6 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import NextAuth, { type DefaultSession } from "next-auth";
-import EmailProvider from "next-auth/providers/nodemailer";
+import Credentials from "next-auth/providers/credentials";
 import { db } from "~/server/db";
 
 /**
@@ -8,51 +8,63 @@ import { db } from "~/server/db";
  * Позволяет TypeScript знать, что в объекте session.user гарантированно есть id.
  */
 declare module "next-auth" {
-    interface Session {
-        user: {
-            id: string;
-        } & DefaultSession["user"];
-    }
+  interface Session {
+    user: {
+      id: string;
+    } & DefaultSession["user"];
+  }
 }
 /**
- * Основная конфигурация NextAuth.js
- * Настраивает адаптер Prisma, провайдер GitHub и защитные проверки.
+ * Основная конфигурация NextAuth.js.
  */
 export const { handlers, auth, signIn, signOut } = NextAuth({
-    adapter: PrismaAdapter(db),
-    providers: [
-        EmailProvider({
-            server: {
-                host: process.env.EMAIL_SERVER_HOST,
-                port: Number(process.env.EMAIL_SERVER_PORT ?? 587),
-                secure: Number(process.env.EMAIL_SERVER_PORT ?? 587) === 465,
-                auth: {
-                    user: process.env.EMAIL_SERVER_USER,
-                    pass: process.env.EMAIL_SERVER_PASSWORD,
-                },
-            },
-            from: process.env.EMAIL_FROM,
-            maxAge: 10 * 60,
-        }),
-    ],
-    secret: process.env.AUTH_SECRET,
-    callbacks: {
-        // Привязываем ID пользователя из базы к сессии фронтенда
-        session: ({ session, user }) => ({
-            ...session,
-            user: {
-                ...session.user,
-                id: user.id,
-            },
-        }),
+  adapter: PrismaAdapter(db),
+  providers: [
+    Credentials({
+      credentials: {
+        login: { label: "Логин", type: "text" },
+        password: { label: "Пароль", type: "password" },
+      },
+      async authorize(credentials) {
+        const login = String(credentials?.login ?? "").trim();
+        const password = String(credentials?.password ?? "");
+        const configuredLogin = process.env.AUTH_ADMIN_LOGIN;
+        const configuredPassword = process.env.AUTH_ADMIN_PASSWORD;
 
-        signIn({ user }) {
-            return user.email === "larionov.igor1987@yandex.ru";
-        },
-    },
-    // Страница, куда перенаправлять при ошибках авторизации
-    pages: {
-        signIn: "/admin",
-        error: "/admin",
-    },
+        if (
+          !configuredLogin ||
+          !configuredPassword ||
+          login !== configuredLogin ||
+          password !== configuredPassword
+        ) {
+          return null;
+        }
+
+        return {
+          id: configuredLogin,
+          name: configuredLogin,
+          email: configuredLogin,
+        };
+      },
+    }),
+  ],
+  session: { strategy: "jwt" },
+  secret: process.env.AUTH_SECRET,
+  callbacks: {
+    jwt: ({ token, user }) => ({
+      ...token,
+      ...(user?.id ? { userId: user.id } : {}),
+    }),
+    session: ({ session, token }) => ({
+      ...session,
+      user: {
+        ...session.user,
+        id: String(token.userId ?? token.sub ?? ""),
+      },
+    }),
+  },
+  pages: {
+    signIn: "/login",
+    error: "/login",
+  },
 });

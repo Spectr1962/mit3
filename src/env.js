@@ -10,14 +10,10 @@ export const env = createEnv({
     DATABASE_URL: z.string().url(),
     NODE_ENV: z.enum(["development", "test", "production"]),
     AUTH_SECRET: z.string(),
-    EMAIL_SERVER_HOST: z.string(),
-    EMAIL_SERVER_PORT: z.coerce.number().default(587),
-    EMAIL_SERVER_USER: z.string(),
-    EMAIL_SERVER_PASSWORD: z.string(),
-    EMAIL_FROM: z.string().email(),
+    AUTH_ADMIN_LOGIN: z.string().optional(),
+    AUTH_ADMIN_PASSWORD: z.string().optional(),
     NEXTAUTH_URL: z.string().url().optional(), // 👈 ДОБАВЬ ЭТУ СТРОКУ СЮДА
   },
-
 
   /**
    * Specify your client-side environment variables schema here. This way you can ensure the app
@@ -36,11 +32,8 @@ export const env = createEnv({
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
     AUTH_SECRET: process.env.AUTH_SECRET,
-    EMAIL_SERVER_HOST: process.env.EMAIL_SERVER_HOST,
-    EMAIL_SERVER_PORT: process.env.EMAIL_SERVER_PORT,
-    EMAIL_SERVER_USER: process.env.EMAIL_SERVER_USER,
-    EMAIL_SERVER_PASSWORD: process.env.EMAIL_SERVER_PASSWORD,
-    EMAIL_FROM: process.env.EMAIL_FROM,
+    AUTH_ADMIN_LOGIN: process.env.AUTH_ADMIN_LOGIN,
+    AUTH_ADMIN_PASSWORD: process.env.AUTH_ADMIN_PASSWORD,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL, // 👈 ДОБАВЬ ЭТУ СТРОКУ СЮДА
   },
 

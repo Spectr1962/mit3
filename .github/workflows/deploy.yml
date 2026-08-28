@@ -44,17 +44,34 @@ jobs:
             AUTH_SECRET=placeholder_value_for_build_only
             NEXTAUTH_URL=http://localhost:3000
 
+      - name: Validate Production Auth Secrets
+        env:
+          AUTH_ADMIN_LOGIN: ${{ secrets.AUTH_ADMIN_LOGIN }}
+          AUTH_ADMIN_PASSWORD: ${{ secrets.AUTH_ADMIN_PASSWORD }}
+        run: |
+          required_vars=(AUTH_ADMIN_LOGIN AUTH_ADMIN_PASSWORD)
+          for variable_name in "${required_vars[@]}"; do
+            if [ -z "${!variable_name}" ]; then
+              echo "::error::Required auth secret is missing: ${variable_name}"
+              exit 1
+            fi
+          done
+
   deploy:
     runs-on: ubuntu-latest
     needs: build-and-push
     steps:
       - name: Execute Remote SSH Commands on Production Server
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          AUTH_ADMIN_LOGIN: ${{ secrets.AUTH_ADMIN_LOGIN }}
+          AUTH_ADMIN_PASSWORD: ${{ secrets.AUTH_ADMIN_PASSWORD }}
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
+          envs: AUTH_ADMIN_LOGIN,AUTH_ADMIN_PASSWORD
           script: |
             # 1. Скачиваем свежий Docker-образ
             docker pull ghcr.io/spectr1962/mit3:latest
@@ -74,11 +91,8 @@ jobs:
               -e AUTH_SECRET="${{ secrets.AUTH_SECRET }}" \
               -e NEXTAUTH_URL="${{ secrets.NEXTAUTH_URL }}" \
               -e AUTH_TRUST_HOST="true" \
-              -e EMAIL_SERVER_HOST="${{ secrets.EMAIL_SERVER_HOST }}" \
-              -e EMAIL_SERVER_PORT="${{ secrets.EMAIL_SERVER_PORT }}" \
-              -e EMAIL_SERVER_USER="${{ secrets.EMAIL_SERVER_USER }}" \
-              -e EMAIL_SERVER_PASSWORD="${{ secrets.EMAIL_SERVER_PASSWORD }}" \
-              -e EMAIL_FROM="${{ secrets.EMAIL_FROM }}" \
+              -e AUTH_ADMIN_LOGIN="$AUTH_ADMIN_LOGIN" \
+              -e AUTH_ADMIN_PASSWORD="$AUTH_ADMIN_PASSWORD" \
               ghcr.io/spectr1962/mit3:latest
 
             # 4. HEALTH CHECK (Защита от критических багов на старте)
