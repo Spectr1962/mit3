@@ -31,6 +31,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 },
             },
             from: process.env.EMAIL_FROM,
+            maxAge: 10 * 60,
         }),
     ],
     secret: process.env.AUTH_SECRET,

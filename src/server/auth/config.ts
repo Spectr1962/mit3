@@ -30,6 +30,7 @@ export const authConfig = {
         },
       },
       from: process.env.EMAIL_FROM,
+      maxAge: 10 * 60,
     }),
   ],
   secret: process.env.AUTH_SECRET, // Обязательный секрет для шифрования куки локально
