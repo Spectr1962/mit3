@@ -1,33 +1,44 @@
-import "~/styles/globals.css";
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+import { Providers } from "./providers";
+import { PwaRegister } from "./pwa-register";
 
-import { type Metadata } from "next";
-import { SessionProvider } from "next-auth/react";
-import { TRPCReactProvider } from "~/trpc/react";
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
-  title: "Цифровые PWA-хабы и решения для бизнеса",
-  description: "Проектирование и разработка высокотехнологичных PWA-платформ нового поколения вместо устаревших CMS.",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
-  // Строку manifest отсюда убираем! Next.js сам подключит её из файла app/manifest.ts
+  title: "MIT3",
+  description: "Базовое PWA-приложение на Next.js и T3 Stack",
+  manifest: "/manifest.json",
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
 };
 
-// Исправляем пустой класс Geist, чтобы Tailwind-переменные работали корректно
-const geist = {
-  variable: "--font-geist-sans",
-  className: "font-sans antialiased"
-};
-
-export default function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="ru" className={geist.variable} suppressHydrationWarning>
-      <body className={geist.className}>
-        <SessionProvider>
-          <TRPCReactProvider>
-            {children}
-          </TRPCReactProvider>
-        </SessionProvider>
+    <html
+      lang="ru"
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col">
+        <Providers>
+          <PwaRegister />
+          {children}
+        </Providers>
       </body>
     </html>
   );

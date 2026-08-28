@@ -1,152 +1,15 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly
-
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-}
-
-// ==========================================
-// СИСТЕМНЫЙ СЛОЙ: NEXTAUTH & АВТОРИЗАЦИЯ
-// ==========================================
-
-model Account {
-    id                       String  @id @default(cuid())
-    userId                   String
-    type                     String
-    provider                 String
-    providerAccountId        String
-    refresh_token            String? // @db.Text
-    access_token             String? // @db.Text
-    expires_at               Int?
-    token_type               String?
-    scope                    String?
-    id_token                 String? // @db.Text
-    session_state            String?
-    user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-    refresh_token_expires_in Int?
-
-    @@unique([provider, providerAccountId])
-}
-
-model Session {
-    id           String   @id @default(cuid())
-    sessionToken String   @unique
-    userId       String
-    expires      DateTime
-    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider = "postgresql"
 }
 
 model User {
-    id            String    @id @default(cuid())
-    login         String?   @unique
-    passwordHash  String?
-    role          String    @default("user")
-    name          String?
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
-}
-
-model VerificationToken {
-    identifier String
-    token      String   @unique
-    expires    DateTime
-
-    @@unique([identifier, token])
-}
-
-// ==========================================
-// СЛОЙ 1: КОММЕРЧЕСКИЙ КАТАЛОГ УСЛУГ (SEO)
-// ==========================================
-
-// Направления услуг (Например: разработка, seo, маркетинг)
-model ServiceSector {
-    id        String    @id @default(cuid())
-    slug      String    @unique // Например: "development", "seo"
-    name      String    // Название сектора
-    shortDesc String    // Краткое описание для плитки на хабе услуг
-    icon      String    // Название иконки для фронтенда (Lucide-react)
-    priority  Int       @default(0) // Сортировка порядка вывода на экране
-    
-    // Обратная связь: один сектор содержит много конкретных услуг
-    services  Service[]
-
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
-
-    @@index([slug])
-}
-
-// Конечные услуги инструментов (Например: pwa-development, seo-audit)
-model Service {
-    id          String        @id @default(cuid())
-    slug        String        @unique // ЧПУ URL-адрес
-    name        String        // Краткое название для вывода в списках
-    titleH1     String        // Главный h1-заголовок на посадочной странице
-    description String        // Вводный продающий абзац
-    
-    // SEO-метаданные
-    metaTitle   String
-    metaDesc    String
-    keywords    String?       // LSI околоцелевые слова для роботов через запятую
-
-    // Коммерческие данные (для цен в микроразметке Product)
-    priceFrom   Int           // Минимальный чек (число для валидации в Schema.org)
-    currency    String        @default("RUB")
-
-    // Конструктор блоков (гибкие данные через JSON)
-    features    Json          // Преимущества / боли (Массив строк/объектов)
-    tariffs     Json          // Сетка тарифов (Название, Описание, Цена, Опции)
-    faq         Json          // Вопросы и ответы для разметки FAQPage
-
-    // Прямая связь с родительским сектором
-    sectorId    String
-    sector      ServiceSector @relation(fields: [sectorId], references: [id], onDelete: Cascade)
-
-    // Перекрестная связь: какие статьи или кейсы Медиацентра привязаны к этой услуге
-    posts       Post[]
-
-    createdAt   DateTime      @default(now())
-    updatedAt   DateTime      @updatedAt
-
-    @@index([slug])
-    @@index([sectorId])
-}
-
-// ==========================================
-// СЛОЙ 2: ЛОКОМОТИВ SEO — МЕДИАЦЕНТР (БЛОГ / КЕЙСЫ)
-// ==========================================
-
-// Модель для ежедневных публикаций и разборов ниш
-model Post {
-    id             String   @id @default(cuid())
-    slug           String   @unique // ЧПУ статьи, например: "kejs-pwa-dlya-stomatologii"
-    title          String   // Заголовок материала
-    leadText       String   // Краткий анонс для карточки на Главной (200-300 симв.)
-    content        String   // Основное тело статьи (Markdown или HTML)
-    bannerImage    String?  // Ссылка на обложку для красивого OG-тега в соцсетях
-    videoUrl       String?  // Ссылка на YouTube ролик, если есть расшифровка видео
-
-    // Рубрикатор Медиацентра
-    topic          String   @default("trends") // Например: trends, cases, automation
-
-    // SEO-разметка дат (Считывается роботами в NewsArticle)
-    datePublished  DateTime @default(now())
-    dateModified   DateTime @updatedAt
-
-    // Связь с коммерческой услугой (какой инструмент рекламируем в статье)
-    relatedServiceId String?
-    relatedService   Service? @relation(fields: [relatedServiceId], references: [id], onDelete: SetNull)
-
-    createdAt      DateTime @default(now())
-    updatedAt      DateTime @updatedAt
-
-    @@index([slug])
-    @@index([relatedServiceId])
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

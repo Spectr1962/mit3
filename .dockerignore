@@ -1,7 +1,4 @@
 node_modules
 .next
-out
-build
-.env
 .git
-README.md
+.env*
