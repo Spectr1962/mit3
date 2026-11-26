@@ -1,0 +1,54 @@
+name: Build and Deploy PWA to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Скачивание кода из репозитория
+        uses: actions/checkout@v4
+
+      - name: Установка Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Установка зависимостей
+        run: npm ci
+
+      - name: Генерация Prisma Client и сборка Next.js + PWA
+        env:
+          SKIP_ENV_VALIDATION: "true"
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          npx prisma generate
+          npm run build
+
+      - name: Копирование собранного проекта на VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: ".next,public,prisma,content,package.json,package-lock.json,next.config.js"
+          target: "/var/www/pwa-app"
+
+      - name: Обновление БД, зависимостей и перезапуск PM2 на сервере
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /var/www/pwa-app
+            npm ci --omit=dev
+            npx prisma generate
+            npx prisma db push
+            pm2 restart pwa-app || pm2 start npm --name "pwa-app" -- start
+            pm2 save
