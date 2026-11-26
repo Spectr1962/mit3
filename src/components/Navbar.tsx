@@ -22,8 +22,12 @@ export function Navbar() {
             {/* Верхняя шапка для компьютеров и мобильных устройств */}
             <header className="bg-background/80 sticky top-0 z-40 border-b backdrop-blur-md">
                 <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
-                    <Link href="/" className="text-lg font-bold tracking-tight">
-                        Мой Бренд
+                    <Link href="/" className="flex items-center">
+                        <img
+                            src="/logo.png"
+                            alt="mit3"
+                            className="h-8 w-auto object-contain"
+                        />
                     </Link>
 
                     {/* Навигация для десктопа */}
@@ -35,8 +39,8 @@ export function Navbar() {
                                     key={item.href}
                                     href={item.href}
                                     className={`text-sm font-medium transition-colors ${isActive
-                                            ? "text-primary font-semibold"
-                                            : "text-muted-foreground hover:text-foreground"
+                                        ? "text-primary font-semibold"
+                                        : "text-muted-foreground hover:text-foreground"
                                         }`}
                                 >
                                     {item.label}
