@@ -36,7 +36,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          source: ".next,public,prisma,content,package.json,package-lock.json,next.config.js"
+          source: ".next,public,prisma,content,src,package.json,package-lock.json,next.config.js"
           target: "/var/www/pwa-app"
 
       - name: Обновление БД, зависимостей и перезапуск PM2 на сервере
@@ -46,9 +46,11 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
+            set -e
             cd /var/www/pwa-app
-            npm ci --omit=dev
+            npm ci
             npx prisma generate
             npx prisma db push
-            pm2 restart pwa-app || pm2 start npm --name "pwa-app" -- start
+            pm2 delete pwa-app || true
+            pm2 start npm --name "pwa-app" -- start
             pm2 save
