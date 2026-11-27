@@ -166,16 +166,31 @@ exports.Prisma.VerificationTokenScalarFieldEnum = {
   expires: 'expires'
 };
 
+exports.Prisma.ServiceCategoryScalarFieldEnum = {
+  id: 'id',
+  slug: 'slug',
+  title: 'title',
+  shortDesc: 'shortDesc',
+  fullDesc: 'fullDesc',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.ServiceScalarFieldEnum = {
   id: 'id',
   slug: 'slug',
   title: 'title',
   description: 'description',
+  fullContent: 'fullContent',
+  features: 'features',
   priceFrom: 'priceFrom',
+  priceNote: 'priceNote',
   duration: 'duration',
-  category: 'category',
   isPopular: 'isPopular',
-  createdAt: 'createdAt'
+  categoryId: 'categoryId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.LeadScalarFieldEnum = {
@@ -209,6 +224,7 @@ exports.Prisma.ModelName = {
   Session: 'Session',
   User: 'User',
   VerificationToken: 'VerificationToken',
+  ServiceCategory: 'ServiceCategory',
   Service: 'Service',
   Lead: 'Lead'
 };

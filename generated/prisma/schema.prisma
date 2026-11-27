@@ -74,16 +74,33 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+model ServiceCategory {
+  id        String    @id @default(cuid())
+  slug      String    @unique // например: "seo", "production", "cmo"
+  title     String // например: "SEO-продвижение"
+  shortDesc String // краткое описание для карточки в хабе
+  fullDesc  String // подробный SEO-текст для страницы направления
+  order     Int       @default(0) // порядок отображения в хабе
+  services  Service[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
 model Service {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  title       String
-  description String
-  priceFrom   Int
-  duration    String // Например: "от 3 дней"
-  category    String // Например: "Разработка", "Дизайн", "Консультация"
-  isPopular   Boolean  @default(false)
-  createdAt   DateTime @default(now())
+  id          String          @id @default(cuid())
+  slug        String          @unique // например: "seo-audit"
+  title       String // название конечной услуги
+  description String // краткий анонс для карточки
+  fullContent String? // подробное SEO-описание для страницы услуги
+  features    String[] // список пунктов "Что входит в услугу"
+  priceFrom   Int // стоимость "от" в рублях
+  priceNote   String? // например: "в месяц" или "за проект"
+  duration    String // срок выполнения
+  isPopular   Boolean         @default(false)
+  categoryId  String
+  category    ServiceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 }
 
 model Lead {
