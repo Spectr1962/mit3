@@ -1,6 +1,7 @@
 import { type Metadata } from "next";
 import { api } from "~/trpc/server";
 import { ServicesHub } from "~/components/ServicesHub";
+import { Breadcrumbs } from "~/components/shared/Breadcrumbs";
 
 export const metadata: Metadata = {
     title: "Услуги комплексного цифрового маркетинга",
@@ -13,6 +14,8 @@ export default async function ServicesHubPage() {
 
     return (
         <div className="space-y-8">
+            <Breadcrumbs items={[{ label: "Услуги" }]} />
+
             <div className="space-y-3">
                 <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
                     Услуги и направления агентства
@@ -23,42 +26,7 @@ export default async function ServicesHubPage() {
                 </p>
             </div>
 
-            {services.length === 0 ? (
-                <p className="text-muted-foreground">
-                    Услуги пока не добавлены. Добавьте первую запись через Prisma Studio.
-                </p>
-            ) : (
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {services.map((service) => (
-                        <Card key={service.id} className="flex flex-col justify-between">
-                            <CardHeader>
-                                <div className="flex items-center justify-between gap-2">
-                                    <Badge variant="secondary">{service.category.title}</Badge>
-                                    {service.isPopular && <Badge>Популярное</Badge>}
-                                </div>
-                                <CardTitle className="pt-2 text-xl">{service.title}</CardTitle>
-                                <CardDescription>{service.description}</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">
-                                    от {service.priceFrom.toLocaleString("ru-RU")} ₽
-                                </div>
-                                <p className="text-muted-foreground mt-1 text-xs">
-                                    Срок выполнения: {service.duration}
-                                </p>
-                            </CardContent>
-                            <CardFooter>
-                                <Link
-                                    href={`/contacts?service=${service.slug}`}
-                                    className={buttonVariants({ className: "w-full" })}
-                                >
-                                    Заказать услугу
-                                </Link>
-                            </CardFooter>
-                        </Card>
-                    ))}
-                </div>
-            )}
+            <ServicesHub categories={categories} />
         </div>
     );
 }

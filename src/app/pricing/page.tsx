@@ -4,6 +4,7 @@ import { api } from "~/trpc/server";
 import { Badge } from "~/components/ui/badge";
 import { buttonVariants } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Breadcrumbs } from "~/components/shared/Breadcrumbs";
 
 export const metadata: Metadata = {
     title: "Прайс-лист на услуги цифрового маркетинга",
@@ -16,6 +17,8 @@ export default async function PricingPage() {
 
     return (
         <div className="space-y-10">
+            <Breadcrumbs items={[{ label: "Цены" }]} />
+
             <div className="space-y-3">
                 <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
                     Прайс-лист агентства
@@ -26,25 +29,41 @@ export default async function PricingPage() {
                 </p>
             </div>
 
-            {/* Таблица-прайс в карточке */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Актуальный прайс-лист</CardTitle>
-                    <CardDescription>
-                        Точная стоимость фиксируется после обсуждения деталей вашей задачи
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="divide-y">
-                        {services.map((service) => (
-                            <div
-                                key={service.id}
-                                className="flex flex-col justify-between gap-4 py-4 sm:flex-row sm:items-center"
-                            >
-                                <div className="space-y-1">
-                                    <div className="flex items-center gap-2">
-                                        <span className="font-semibold">{service.title}</span>
-                                        <Badge variant="outline">{service.category.title}</Badge>
+            <div className="space-y-8">
+                {categories.map((cat) => (
+                    <Card key={cat.id}>
+                        <CardHeader className="border-b pb-4">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                <CardTitle className="text-xl">{cat.title}</CardTitle>
+                                <Link
+                                    href={`/services/${cat.slug}`}
+                                    className="text-sm font-medium text-primary hover:underline"
+                                >
+                                    Все услуги раздела →
+                                </Link>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="divide-y pt-2">
+                            {cat.services.map((srv) => (
+                                <div
+                                    key={srv.id}
+                                    className="flex flex-col justify-between gap-4 py-4 sm:flex-row sm:items-center"
+                                >
+                                    <div className="space-y-1">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <Link
+                                                href={`/services/${cat.slug}/${srv.slug}`}
+                                                className="font-semibold hover:text-primary hover:underline"
+                                            >
+                                                {srv.title}
+                                            </Link>
+                                            {srv.isPopular && (
+                                                <Badge variant="secondary">Популярное</Badge>
+                                            )}
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">
+                                            {srv.description}
+                                        </p>
                                     </div>
 
                                     <div className="flex shrink-0 items-center justify-between gap-4 sm:justify-end">
