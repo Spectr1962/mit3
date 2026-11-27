@@ -2,12 +2,14 @@ import { Suspense } from "react";
 import { Mail, MapPin, Phone, Send } from "lucide-react";
 import { api } from "~/trpc/server";
 import { ContactForm } from "~/components/ContactForm";
+import { Breadcrumbs } from "~/components/shared/Breadcrumbs";
 
 export default async function ContactsPage() {
     const services = await api.service.getAll();
 
     return (
         <div className="space-y-8">
+            <Breadcrumbs items={[{ label: "Контакты" }]} />
             <div>
                 <h1 className="text-3xl font-bold tracking-tight">Контакты</h1>
                 <p className="text-muted-foreground mt-2">
