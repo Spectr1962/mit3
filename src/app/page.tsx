@@ -112,7 +112,7 @@ export default async function HomePage() {
               <Card key={service.id} className="flex flex-col justify-between">
                 <CardHeader>
                   <div className="mb-2 flex items-center justify-between gap-2">
-                    <Badge variant="outline">{service.category}</Badge>
+                    <Badge variant="outline">{service.category.title}</Badge>
                     {service.isPopular && <Badge>Популярное</Badge>}
                   </div>
                   <CardTitle className="text-xl">{service.title}</CardTitle>
