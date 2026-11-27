@@ -41,7 +41,7 @@ export default async function PricingPage() {
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2">
                                         <span className="font-semibold">{service.title}</span>
-                                        <Badge variant="outline">{service.category}</Badge>
+                                        <Badge variant="outline">{service.category.title}</Badge>
                                     </div>
                                     <p className="text-muted-foreground text-sm">
                                         {service.description} • Срок: {service.duration}
