@@ -22,11 +22,11 @@ export function Navbar() {
             {/* Верхняя шапка для компьютеров и мобильных устройств */}
             <header className="bg-background/80 sticky top-0 z-40 border-b backdrop-blur-md">
                 <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
-                    <Link href="/" className="flex shrink-0 items-center">
+                    <Link href="/" className="flex items-center">
                         <img
                             src="/logo.png"
-                            alt="MIT3"
-                            className="h-7 w-auto object-contain sm:h-8"
+                            alt="mit3"
+                            className="h-8 w-auto object-contain"
                         />
                     </Link>
 

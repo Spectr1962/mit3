@@ -48,6 +48,11 @@ export const metadata: Metadata = {
       { url: "/apple-touch-icon.png?v=2", sizes: "180x180", type: "image/png" },
     ],
   },
+    appleWebApp: {
+    capable: true,
+    title: "mit3",
+    statusBarStyle: "default",
+  },
 };
 
 export default function RootLayout({
