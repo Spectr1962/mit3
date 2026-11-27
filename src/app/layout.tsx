@@ -27,6 +27,7 @@ export const metadata: Metadata = {
     default: "mit3 — Агентство комплексного цифрового маркетинга",
     template: "%s | mit3",
   },
+  applicationName: "mit3",
   description:
     "Системное привлечение клиентов и рост выручки: маркетинговая стратегия, SEO, SMM, контент-продакшн и быстрые PWA-сайты под ключ.",
   metadataBase: new URL("https://mit3.ru"),
@@ -47,11 +48,6 @@ export const metadata: Metadata = {
     apple: [
       { url: "/apple-touch-icon.png?v=2", sizes: "180x180", type: "image/png" },
     ],
-  },
-    appleWebApp: {
-    capable: true,
-    title: "mit3",
-    statusBarStyle: "default",
   },
 };
 
