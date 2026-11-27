@@ -50,7 +50,7 @@ jobs:
             cd /var/www/pwa-app
             npm ci
             npx prisma generate
-            npx prisma db push
+            npx prisma db push --accept-data-loss
             pm2 delete pwa-app || true
             pm2 start npm --name "pwa-app" -- start
             pm2 save
