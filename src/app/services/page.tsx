@@ -33,7 +33,7 @@ export default async function ServicesPage() {
                         <Card key={service.id} className="flex flex-col justify-between">
                             <CardHeader>
                                 <div className="flex items-center justify-between gap-2">
-                                    <Badge variant="secondary">{service.category}</Badge>
+                                    <Badge variant="secondary">{service.category.title}</Badge>
                                     {service.isPopular && <Badge>Популярное</Badge>}
                                 </div>
                                 <CardTitle className="pt-2 text-xl">{service.title}</CardTitle>
