@@ -1,25 +1,25 @@
-import Link from "next/link";
+import { type Metadata } from "next";
 import { api } from "~/trpc/server";
-import { Badge } from "~/components/ui/badge";
-import { buttonVariants } from "~/components/ui/button";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "~/components/ui/card";
+import { ServicesHub } from "~/components/ServicesHub";
 
-export default async function ServicesPage() {
-    const services = await api.service.getAll();
+export const metadata: Metadata = {
+    title: "Услуги комплексного цифрового маркетинга",
+    description:
+        "Все направления digital-маркетинга в одном окне: стратегия и CMO, SEO, SERM, Performance-трафик, SMM, продакшн, CRM, аналитика и разработка PWA.",
+};
+
+export default async function ServicesHubPage() {
+    const categories = await api.service.getCategoriesWithServices();
 
     return (
-        <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">Наши услуги</h1>
-                <p className="text-muted-foreground mt-2">
-                    Выберите подходящее решение для вашей задачи
+        <div className="space-y-8">
+            <div className="space-y-3">
+                <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                    Услуги и направления агентства
+                </h1>
+                <p className="max-w-2xl text-base text-muted-foreground">
+                    Выберите нужное направление цифрового маркетинга или воспользуйтесь
+                    поиском, чтобы быстро найти конкретную задачу и стоимость запуска.
                 </p>
             </div>
 
