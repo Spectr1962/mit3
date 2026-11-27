@@ -4,6 +4,7 @@ import Markdown from "react-markdown";
 import { ArrowLeft } from "lucide-react";
 import { getPostBySlug } from "~/lib/blog";
 import { Badge } from "~/components/ui/badge";
+import { Breadcrumbs } from "~/components/shared/Breadcrumbs";
 
 export default async function BlogPostPage({
     params,
@@ -17,6 +18,7 @@ export default async function BlogPostPage({
 
     return (
         <article className="space-y-8">
+            <Breadcrumbs items={[{ label: "Блог", href: "/blog" }, { label: post.title }]} />
             <div>
                 <Link
                     href="/blog"
