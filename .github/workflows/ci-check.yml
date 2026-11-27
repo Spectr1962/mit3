@@ -1,6 +1,10 @@
 name: Check Pull Request
 
 on:
+  push:
+    branches:
+      - "feature/**"
+      - "fix/**"
   pull_request:
     branches:
       - main
